@@ -1,0 +1,126 @@
+// C math starter set
+// Descriptor-only metadata for future FFI binding/codegen.
+// Usage idea: @ "cmath.lang"
+//
+// Most of these functions are double-based. The current lang runtime does not
+// yet expose floating-point values, so this file is primarily a forward-looking
+// declaration module.
+
+cmath = {
+    lib : string = "libm.so.6"
+    abi : string = "c"
+
+    functions = {
+        sin = {
+            symbol : string = "sin"
+            params = { p1 : string = "double" }
+            returns : string = "double"
+            header : string = "math.h"
+        }
+
+        cos = {
+            symbol : string = "cos"
+            params = { p1 : string = "double" }
+            returns : string = "double"
+            header : string = "math.h"
+        }
+
+        tan = {
+            symbol : string = "tan"
+            params = { p1 : string = "double" }
+            returns : string = "double"
+            header : string = "math.h"
+        }
+
+        asin = {
+            symbol : string = "asin"
+            params = { p1 : string = "double" }
+            returns : string = "double"
+            header : string = "math.h"
+        }
+
+        acos = {
+            symbol : string = "acos"
+            params = { p1 : string = "double" }
+            returns : string = "double"
+            header : string = "math.h"
+        }
+
+        atan = {
+            symbol : string = "atan"
+            params = { p1 : string = "double" }
+            returns : string = "double"
+            header : string = "math.h"
+        }
+
+        atan2 = {
+            symbol : string = "atan2"
+            params = { p1 : string = "double"  p2 : string = "double" }
+            returns : string = "double"
+            header : string = "math.h"
+        }
+
+        sqrt = {
+            symbol : string = "sqrt"
+            params = { p1 : string = "double" }
+            returns : string = "double"
+            header : string = "math.h"
+        }
+
+        pow = {
+            symbol : string = "pow"
+            params = { p1 : string = "double"  p2 : string = "double" }
+            returns : string = "double"
+            header : string = "math.h"
+        }
+
+        exp = {
+            symbol : string = "exp"
+            params = { p1 : string = "double" }
+            returns : string = "double"
+            header : string = "math.h"
+        }
+
+        log = {
+            symbol : string = "log"
+            params = { p1 : string = "double" }
+            returns : string = "double"
+            header : string = "math.h"
+        }
+
+        log10 = {
+            symbol : string = "log10"
+            params = { p1 : string = "double" }
+            returns : string = "double"
+            header : string = "math.h"
+        }
+
+        floor = {
+            symbol : string = "floor"
+            params = { p1 : string = "double" }
+            returns : string = "double"
+            header : string = "math.h"
+        }
+
+        ceil = {
+            symbol : string = "ceil"
+            params = { p1 : string = "double" }
+            returns : string = "double"
+            header : string = "math.h"
+        }
+
+        fabs = {
+            symbol : string = "fabs"
+            params = { p1 : string = "double" }
+            returns : string = "double"
+            header : string = "math.h"
+        }
+
+        fmod = {
+            symbol : string = "fmod"
+            params = { p1 : string = "double"  p2 : string = "double" }
+            returns : string = "double"
+            header : string = "math.h"
+        }
+    }
+}

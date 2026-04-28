@@ -30,7 +30,7 @@ private:
     std::shared_ptr<Environment> globals_;
     bool                         verbose_;
 
-    // ── statement execution ───────────────────────────────────────────────────
+    // --- statement execution --------------------------------------------------
     ValuePtr exec(const ast::Stmt& stmt,  std::shared_ptr<Environment> env);
     ValuePtr exec_block(const std::vector<ast::StmtPtr>& stmts,
                         std::shared_ptr<Environment> env);
@@ -40,10 +40,11 @@ private:
     ValuePtr exec_expr_stmt(const ast::ExprStmt& s, std::shared_ptr<Environment> env);
     ValuePtr exec_import(const ast::ImportStmt& s, std::shared_ptr<Environment> env);
 
-    // ── expression evaluation ─────────────────────────────────────────────────
+    // --- expression evaluation --------------------------------------------------
     ValuePtr eval(const ast::Expr& expr, std::shared_ptr<Environment> env);
 
     ValuePtr eval_int      (const ast::IntLiteral&    e, std::shared_ptr<Environment> env);
+    ValuePtr eval_float    (const ast::FloatLiteral&  e, std::shared_ptr<Environment> env);
     ValuePtr eval_string   (const ast::StringLiteral& e, std::shared_ptr<Environment> env);
     ValuePtr eval_ident    (const ast::Identifier&    e, std::shared_ptr<Environment> env);
     ValuePtr eval_binary   (const ast::BinaryExpr&    e, std::shared_ptr<Environment> env);
@@ -56,7 +57,7 @@ private:
     ValuePtr eval_dyn_member(const ast::DynMemberExpr& e, std::shared_ptr<Environment> env);
     ValuePtr eval_iter     (const ast::IterExpr&       e, std::shared_ptr<Environment> env);
 
-    // ── call dispatch ─────────────────────────────────────────────────────────
+    // --- call dispatch --------------------------------------------------
     ValuePtr call_value(ValuePtr callee,
                         const std::vector<ValuePtr>& args,
                         ValuePtr receiver);
@@ -67,7 +68,7 @@ private:
 
     ValuePtr bind_foreign_function(ValuePtr spec);
 
-    // ── built-ins ─────────────────────────────────────────────────────────────
+    // --- built-ins -------------------------------------------------------------
     void register_builtins();
 };
 

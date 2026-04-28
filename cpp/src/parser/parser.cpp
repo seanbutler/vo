@@ -215,6 +215,12 @@ ExprPtr Parser::parse_primary() {
         return std::make_shared<IntLiteral>(v);
     }
 
+    // Float literal
+    if (check(TT::Float)) {
+        auto v = advance().float_value();
+        return std::make_shared<FloatLiteral>(v);
+    }
+
     // String literal
     if (check(TT::String)) {
         auto v = advance().string_value();

@@ -27,7 +27,7 @@ private:
     char   advance();
     void   skip_whitespace_and_comments();
     Token  read_string();
-    Token  read_integer();
+    Token  read_number();
     Token  read_word();
     [[noreturn]] void error(const std::string& msg) const;
 };

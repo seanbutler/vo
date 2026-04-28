@@ -57,11 +57,12 @@ struct NativeCallable {
 // ── Value ─────────────────────────────────────────────────────────────────────
 
 struct Value {
-    enum class Kind { Nil, Integer, String, Hash, Callable, NativeCallable };
+    enum class Kind { Nil, Integer, Double, String, Hash, Callable, NativeCallable };
 
     using Data = std::variant<
         std::monostate,   // Nil
         int64_t,          // Integer
+        double,           // Double
         std::string,      // String
         HashPtr,          // Hash
         CallablePtr,      // Callable
@@ -72,6 +73,7 @@ struct Value {
 
     Value()                          : data(std::monostate{}) {}
     explicit Value(int64_t v)        : data(v) {}
+    explicit Value(double v)         : data(v) {}
     explicit Value(std::string v)    : data(std::move(v)) {}
     explicit Value(HashPtr v)        : data(std::move(v)) {}
     explicit Value(CallablePtr v)    : data(std::move(v)) {}
@@ -81,6 +83,8 @@ struct Value {
 
     bool is_nil()      const { return kind() == Kind::Nil; }
     bool is_int()      const { return kind() == Kind::Integer; }
+    bool is_double()   const { return kind() == Kind::Double; }
+    bool is_numeric()  const { return is_int() || is_double(); }
     bool is_string()   const { return kind() == Kind::String; }
     bool is_hash()     const { return kind() == Kind::Hash; }
     bool is_callable() const { return kind() == Kind::Callable; }
@@ -89,6 +93,7 @@ struct Value {
     bool is_truthy() const;
 
     int64_t            as_int()      const { return std::get<int64_t>(data); }
+    double             as_double()   const { return std::get<double>(data); }
     const std::string& as_string()   const { return std::get<std::string>(data); }
     HashPtr            as_hash()     const { return std::get<HashPtr>(data); }
     CallablePtr        as_callable() const { return std::get<CallablePtr>(data); }
@@ -99,6 +104,7 @@ struct Value {
     // ── factory helpers ───────────────────────────────────────────────────────
     static ValuePtr nil()                  { return std::make_shared<Value>(); }
     static ValuePtr from(int64_t v)        { return std::make_shared<Value>(v); }
+    static ValuePtr from(double v)         { return std::make_shared<Value>(v); }
     static ValuePtr from(std::string v)    { return std::make_shared<Value>(std::move(v)); }
     static ValuePtr from(HashPtr v)        { return std::make_shared<Value>(std::move(v)); }
     static ValuePtr from(CallablePtr v)    { return std::make_shared<Value>(std::move(v)); }

@@ -74,6 +74,12 @@ int64_t require_int(ValuePtr arg, const std::string& type_name) {
     return arg->as_int();
 }
 
+double require_double(ValuePtr arg, const std::string& type_name) {
+    if (arg->is_double()) return arg->as_double();
+    if (arg->is_int()) return static_cast<double>(arg->as_int());
+    throw RuntimeError("Native argument for type '" + type_name + "' must be numeric");
+}
+
 const char* require_cstring(ValuePtr arg) {
     if (!arg->is_string())
         throw RuntimeError("Native argument for type 'cstring' must be a string");
@@ -193,6 +199,8 @@ ValuePtr Interpreter::eval(const ast::Expr& expr,
                             std::shared_ptr<Environment> env) {
     if (auto* e = dynamic_cast<const ast::IntLiteral*>(&expr))
         return eval_int(*e, env);
+    if (auto* e = dynamic_cast<const ast::FloatLiteral*>(&expr))
+        return eval_float(*e, env);
     if (auto* e = dynamic_cast<const ast::StringLiteral*>(&expr))
         return eval_string(*e, env);
     if (auto* e = dynamic_cast<const ast::Identifier*>(&expr))
@@ -220,6 +228,11 @@ ValuePtr Interpreter::eval(const ast::Expr& expr,
 
 ValuePtr Interpreter::eval_int(const ast::IntLiteral& e,
                                 std::shared_ptr<Environment>) {
+    return Value::from(e.value);
+}
+
+ValuePtr Interpreter::eval_float(const ast::FloatLiteral& e,
+                                  std::shared_ptr<Environment>) {
     return Value::from(e.value);
 }
 
@@ -261,6 +274,25 @@ ValuePtr Interpreter::eval_binary(const ast::BinaryExpr& e,
         if (op == ">=") return Value::from(static_cast<int64_t>(a >= b));
     }
 
+    // Mixed numeric arithmetic/comparison (exact equality)
+    if (lv->is_numeric() && rv->is_numeric()) {
+        auto to_double = [](ValuePtr v) -> double {
+            return v->is_double() ? v->as_double() : static_cast<double>(v->as_int());
+        };
+        double a = to_double(lv), b = to_double(rv);
+        if (op == "+")  return Value::from(a + b);
+        if (op == "-")  return Value::from(a - b);
+        if (op == "*")  return Value::from(a * b);
+        if (op == "/")  { if (b == 0.0) throw RuntimeError("Division by zero");
+                           return Value::from(a / b); }
+        if (op == "==") return Value::from(static_cast<int64_t>(a == b));
+        if (op == "!=") return Value::from(static_cast<int64_t>(a != b));
+        if (op == "<")  return Value::from(static_cast<int64_t>(a <  b));
+        if (op == "<=") return Value::from(static_cast<int64_t>(a <= b));
+        if (op == ">")  return Value::from(static_cast<int64_t>(a >  b));
+        if (op == ">=") return Value::from(static_cast<int64_t>(a >= b));
+    }
+
     // Generic equality
     if (op == "==") return Value::from(static_cast<int64_t>(
                         lv->kind() == rv->kind() &&
@@ -276,6 +308,7 @@ ValuePtr Interpreter::eval_unary(const ast::UnaryExpr& e,
                                   std::shared_ptr<Environment> env) {
     ValuePtr v = eval(*e.operand, env);
     if (e.op == "-" && v->is_int()) return Value::from(-v->as_int());
+    if (e.op == "-" && v->is_double()) return Value::from(-v->as_double());
     if (e.op == "$$") return bind_foreign_function(v);
     throw RuntimeError("Unsupported unary operator '" + e.op + "'");
 }
@@ -501,6 +534,21 @@ ValuePtr Interpreter::bind_foreign_function(ValuePtr spec) {
             return Value::from(static_cast<int64_t>(
                 fn(require_cstring(args[0]), nullptr,
                    static_cast<int>(require_int(args[2], "int")))));
+        };
+    } else if (param_types.size() == 1 && param_types[0] == "double" && return_type == "double") {
+        using Fn = double (*)(double);
+        Fn fn = reinterpret_cast<Fn>(raw_symbol);
+        native->invoke = [fn](const std::vector<ValuePtr>& args) {
+            require_arity(args, 1);
+            return Value::from(fn(require_double(args[0], "double")));
+        };
+    } else if (param_types.size() == 2 && param_types[0] == "double" && param_types[1] == "double" && return_type == "double") {
+        using Fn = double (*)(double, double);
+        Fn fn = reinterpret_cast<Fn>(raw_symbol);
+        native->invoke = [fn](const std::vector<ValuePtr>& args) {
+            require_arity(args, 2);
+            return Value::from(fn(require_double(args[0], "double"),
+                                  require_double(args[1], "double")));
         };
     } else {
         throw RuntimeError("Unsupported foreign signature for symbol '" + symbol + "'");

@@ -70,10 +70,33 @@ Token Lexer::read_string() {
     error("Unterminated string literal");
 }
 
-Token Lexer::read_integer() {
+Token Lexer::read_number() {
     int ln = line_, cl = col_;
     std::string buf;
     while (!at_end() && std::isdigit(peek())) buf += advance();
+
+    bool is_float = false;
+
+    if (!at_end() && peek() == '.' && std::isdigit(peek(1))) {
+        is_float = true;
+        buf += advance(); // '.'
+        while (!at_end() && std::isdigit(peek())) buf += advance();
+    }
+
+    if (!at_end() && (peek() == 'e' || peek() == 'E')) {
+        int expo_pos = static_cast<int>(buf.size());
+        buf += advance(); // e/E
+        if (!at_end() && (peek() == '+' || peek() == '-'))
+            buf += advance();
+        if (at_end() || !std::isdigit(peek()))
+            error("Malformed exponent in numeric literal");
+        is_float = true;
+        while (!at_end() && std::isdigit(peek())) buf += advance();
+        (void)expo_pos;
+    }
+
+    if (is_float)
+        return { TokenType::Float, buf, std::stod(buf), ln, cl };
     return { TokenType::Integer, buf, static_cast<int64_t>(std::stoll(buf)), ln, cl };
 }
 
@@ -98,7 +121,7 @@ std::vector<Token> Lexer::tokenize() {
         char c = peek();
 
         if (c == '"')              { tokens.push_back(read_string());  continue; }
-        if (std::isdigit(c))       { tokens.push_back(read_integer()); continue; }
+        if (std::isdigit(c))       { tokens.push_back(read_number()); continue; }
         if (std::isalpha(c) || c == '_') { tokens.push_back(read_word()); continue; }
 
         advance(); // consume single-char token

@@ -7,7 +7,7 @@ namespace lang {
 
 enum class TokenType {
     // Literals
-    Integer, String, Identifier,
+    Integer, Float, String, Identifier,
 
     // Foreign binding
     DollarDollar,   // $$
@@ -44,7 +44,7 @@ enum class TokenType {
 struct Token {
     TokenType                                    type;
     std::string                                  lexeme;
-    std::variant<std::monostate, int64_t, std::string> literal;
+    std::variant<std::monostate, int64_t, double, std::string> literal;
     int line, col;
 
     // Plain token
@@ -55,11 +55,16 @@ struct Token {
     Token(TokenType t, std::string lex, int64_t v, int ln, int cl)
         : type(t), lexeme(std::move(lex)), literal(v), line(ln), col(cl) {}
 
+    // Float literal
+    Token(TokenType t, std::string lex, double v, int ln, int cl)
+        : type(t), lexeme(std::move(lex)), literal(v), line(ln), col(cl) {}
+
     // String literal
     Token(TokenType t, std::string lex, std::string v, int ln, int cl)
         : type(t), lexeme(std::move(lex)), literal(std::move(v)), line(ln), col(cl) {}
 
     int64_t     int_value()    const { return std::get<int64_t>(literal); }
+    double      float_value()  const { return std::get<double>(literal); }
     std::string string_value() const { return std::get<std::string>(literal); }
 };
 

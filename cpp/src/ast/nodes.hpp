@@ -34,6 +34,11 @@ struct IntLiteral : Expr {
     explicit IntLiteral(int64_t v) : value(v) {}
 };
 
+struct FloatLiteral : Expr {
+    double value;
+    explicit FloatLiteral(double v) : value(v) {}
+};
+
 struct StringLiteral : Expr {
     std::string value;
     explicit StringLiteral(std::string v) : value(std::move(v)) {}

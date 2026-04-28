@@ -82,3 +82,11 @@ map_values = (src, fn) {
     src >> (k, v) { result.(k) <- fn(v) }
     result
 }
+
+// ----- almost_equal --------------------------------------------------------
+// Simple floating-point helper: absolute difference <= epsilon.
+
+almost_equal = (a : double, b : double, epsilon : double) {
+    delta : double = a - b
+    ? delta < 0.0 { -delta <= epsilon } { delta <= epsilon }
+}
