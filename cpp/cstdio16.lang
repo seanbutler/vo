@@ -1,0 +1,125 @@
+// C stdio starter set (16 functions)
+// Descriptor-only metadata for future FFI binding/codegen.
+// Usage idea: @ "cstdio16.lang"
+
+cstdio16 = {
+    lib : string = "libc.so.6"
+    abi : string = "c"
+
+    functions = {
+        printf = {
+            symbol : string = "printf"
+            params = { p1 : string = "cstring"  p2 : string = "varargs" }
+            returns : string = "int"
+            header : string = "stdio.h"
+            note : string = "variadic; simple binders usually prefer puts/putchar/snprintf first"
+        }
+
+        snprintf = {
+            symbol : string = "snprintf"
+            params = { p1 : string = "buffer"  p2 : string = "usize"  p3 : string = "cstring"  p4 : string = "varargs" }
+            returns : string = "int"
+            header : string = "stdio.h"
+            note : string = "variadic; requires writable buffer handling"
+        }
+
+        puts = {
+            symbol : string = "puts"
+            params = { p1 : string = "cstring" }
+            returns : string = "int"
+            header : string = "stdio.h"
+        }
+
+        putchar = {
+            symbol : string = "putchar"
+            params = { p1 : string = "int" }
+            returns : string = "int"
+            header : string = "stdio.h"
+        }
+
+        fputs = {
+            symbol : string = "fputs"
+            params = { p1 : string = "cstring"  p2 : string = "file_ptr" }
+            returns : string = "int"
+            header : string = "stdio.h"
+        }
+
+        fopen = {
+            symbol : string = "fopen"
+            params = { p1 : string = "cstring"  p2 : string = "cstring" }
+            returns : string = "file_ptr"
+            header : string = "stdio.h"
+        }
+
+        fclose = {
+            symbol : string = "fclose"
+            params = { p1 : string = "file_ptr" }
+            returns : string = "int"
+            header : string = "stdio.h"
+        }
+
+        fread = {
+            symbol : string = "fread"
+            params = { p1 : string = "buffer"  p2 : string = "usize"  p3 : string = "usize"  p4 : string = "file_ptr" }
+            returns : string = "usize"
+            header : string = "stdio.h"
+        }
+
+        fwrite = {
+            symbol : string = "fwrite"
+            params = { p1 : string = "buffer"  p2 : string = "usize"  p3 : string = "usize"  p4 : string = "file_ptr" }
+            returns : string = "usize"
+            header : string = "stdio.h"
+        }
+
+        fflush = {
+            symbol : string = "fflush"
+            params = { p1 : string = "file_ptr" }
+            returns : string = "int"
+            header : string = "stdio.h"
+            note : string = "{} / nil could later represent flush-all if desired"
+        }
+
+        fseek = {
+            symbol : string = "fseek"
+            params = { p1 : string = "file_ptr"  p2 : string = "long"  p3 : string = "int" }
+            returns : string = "int"
+            header : string = "stdio.h"
+        }
+
+        ftell = {
+            symbol : string = "ftell"
+            params = { p1 : string = "file_ptr" }
+            returns : string = "long"
+            header : string = "stdio.h"
+        }
+
+        rewind = {
+            symbol : string = "rewind"
+            params = { p1 : string = "file_ptr" }
+            returns : string = "void"
+            header : string = "stdio.h"
+        }
+
+        remove = {
+            symbol : string = "remove"
+            params = { p1 : string = "cstring" }
+            returns : string = "int"
+            header : string = "stdio.h"
+        }
+
+        rename = {
+            symbol : string = "rename"
+            params = { p1 : string = "cstring"  p2 : string = "cstring" }
+            returns : string = "int"
+            header : string = "stdio.h"
+        }
+
+        perror = {
+            symbol : string = "perror"
+            params = { p1 : string = "cstring" }
+            returns : string = "void"
+            header : string = "stdio.h"
+        }
+    }
+}
