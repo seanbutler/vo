@@ -133,8 +133,9 @@ std::vector<Token> Lexer::tokenize() {
             else                                  tokens.push_back({ TokenType::Lt,   "<",  ln, cl });
             break;
         case '>':
-            if (peek() == '=') { advance(); tokens.push_back({ TokenType::Gte, ">=", ln, cl }); }
-            else                             tokens.push_back({ TokenType::Gt,  ">",  ln, cl });
+            if (peek() == '=') { advance(); tokens.push_back({ TokenType::Gte,  ">=", ln, cl }); }
+            else if (peek() == '>') { advance(); tokens.push_back({ TokenType::GtGt, ">>", ln, cl }); }
+            else                             tokens.push_back({ TokenType::Gt,   ">",  ln, cl });
             break;
         default:
             error(std::string("Unexpected character '") + c + "'");

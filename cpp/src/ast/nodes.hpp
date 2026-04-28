@@ -104,6 +104,22 @@ struct CallableExpr : Expr {
         : params(std::move(p)), body(std::move(b)) {}
 };
 
+// obj.(key_expr)  — dynamic member access by string key
+struct DynMemberExpr : Expr {
+    ExprPtr object;
+    ExprPtr key;
+    DynMemberExpr(ExprPtr obj, ExprPtr k)
+        : object(std::move(obj)), key(std::move(k)) {}
+};
+
+// obj >> (k, v) { body… }  — iterate all members of a hash
+struct IterExpr : Expr {
+    ExprPtr object;    // the hash
+    ExprPtr callable;  // (k, v) { body }
+    IterExpr(ExprPtr obj, ExprPtr fn)
+        : object(std::move(obj)), callable(std::move(fn)) {}
+};
+
 // ── statements ────────────────────────────────────────────────────────────────
 
 // name [: type] (= | <-) expr

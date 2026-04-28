@@ -5,7 +5,8 @@
 empty = { is_empty : int = 1 }
 
 range = (lo : int, hi : int) {
-    ? lo > hi { empty } {
+    ? lo > hi { empty } 
+    {
         { is_empty : int = 0  num : int = lo  next = range(lo + 1, hi) }
     }
 }

@@ -82,6 +82,16 @@ ValuePtr Interpreter::exec_assign(const ast::AssignStmt& s,
         obj->as_hash()->set(mem->member, val);
         return val;
     }
+    if (auto* dyn = dynamic_cast<const ast::DynMemberExpr*>(s.target.get())) {
+        ValuePtr obj = eval(*dyn->object, env);
+        ValuePtr key = eval(*dyn->key, env);
+        if (!obj->is_hash())
+            throw RuntimeError("Dynamic member assignment on non-hash value");
+        if (!key->is_string())
+            throw RuntimeError("Dynamic member key must be a string");
+        obj->as_hash()->set(key->as_string(), val);
+        return val;
+    }
     throw RuntimeError("Invalid assignment target");
 }
 
@@ -117,6 +127,10 @@ ValuePtr Interpreter::eval(const ast::Expr& expr,
         return eval_hash_lit(*e, env);
     if (auto* e = dynamic_cast<const ast::CallableExpr*>(&expr))
         return eval_callable(*e, env);
+    if (auto* e = dynamic_cast<const ast::DynMemberExpr*>(&expr))
+        return eval_dyn_member(*e, env);
+    if (auto* e = dynamic_cast<const ast::IterExpr*>(&expr))
+        return eval_iter(*e, env);
     throw RuntimeError("Unknown expression type");
 }
 
@@ -233,6 +247,35 @@ ValuePtr Interpreter::eval_callable(const ast::CallableExpr& e,
     fn->body    = e.body;
     fn->closure = env;
     return Value::from(fn);
+}
+
+ValuePtr Interpreter::eval_dyn_member(const ast::DynMemberExpr& e,
+                                       std::shared_ptr<Environment> env) {
+    ValuePtr obj = eval(*e.object, env);
+    ValuePtr key = eval(*e.key, env);
+    if (!obj->is_hash())
+        throw RuntimeError("Dynamic member access on non-hash value");
+    if (!key->is_string())
+        throw RuntimeError("Dynamic member key must be a string");
+    return obj->as_hash()->get(key->as_string());
+}
+
+ValuePtr Interpreter::eval_iter(const ast::IterExpr& e,
+                                 std::shared_ptr<Environment> env) {
+    ValuePtr obj = eval(*e.object, env);
+    if (!obj->is_hash())
+        throw RuntimeError(">> requires a hash on the left-hand side");
+    ValuePtr fn_val = eval(*e.callable, env);
+    if (!fn_val->is_callable())
+        throw RuntimeError(">> requires a callable on the right-hand side");
+    const Callable& fn = *fn_val->as_callable();
+    if (fn.param_names.size() != 2)
+        throw RuntimeError(">> callable must take exactly two parameters (key, value)");
+    for (auto& [k, v] : obj->as_hash()->members) {
+        if (k == "()") continue;   // skip constructor slot
+        call_callable(fn, { Value::from(k), v }, nullptr);
+    }
+    return Value::nil();
 }
 
 // --- call dispatch ------------------------------------------------------

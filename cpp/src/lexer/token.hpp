@@ -19,6 +19,9 @@ enum class TokenType {
     // Comparison
     Eq, Neq, Lt, Lte, Gt, Gte,
 
+    // Iteration
+    GtGt,   // >>
+
     // Punctuation
     Dot, Comma, Colon,
     LParen, RParen,

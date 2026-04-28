@@ -115,7 +115,17 @@ std::vector<StmtPtr> Parser::parse_block_body() {
 
 // ── expressions (precedence ladder) ──────────────────────────────────────────
 
-ExprPtr Parser::parse_expr()           { return parse_comparison(); }
+ExprPtr Parser::parse_expr()           { return parse_iter(); }
+
+ExprPtr Parser::parse_iter() {
+    auto left = parse_comparison();
+    if (check(TT::GtGt)) {
+        advance(); // consume '>>'
+        auto fn = parse_callable();
+        return std::make_shared<IterExpr>(std::move(left), std::move(fn));
+    }
+    return left;
+}
 
 ExprPtr Parser::parse_comparison() {
     auto left = parse_additive();
@@ -158,8 +168,16 @@ ExprPtr Parser::parse_postfix() {
     auto expr = parse_primary();
     while (true) {
         if (match(TT::Dot)) {
-            std::string mem = expect(TT::Identifier).lexeme;
-            expr = std::make_shared<MemberExpr>(std::move(expr), mem);
+            // Dynamic member access: .(expr)
+            if (check(TT::LParen)) {
+                advance(); // consume '('
+                auto key = parse_expr();
+                expect(TT::RParen);
+                expr = std::make_shared<DynMemberExpr>(std::move(expr), std::move(key));
+            } else {
+                std::string mem = expect(TT::Identifier).lexeme;
+                expr = std::make_shared<MemberExpr>(std::move(expr), mem);
+            }
         } else if (check(TT::LParen)) {
             // '() =' is a hash constructor member — stop here, don't eat it as a call
             if (check(TT::RParen, 1) && check(TT::Assign, 2)) break;

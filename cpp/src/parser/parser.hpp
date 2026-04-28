@@ -39,6 +39,7 @@ private:
 
     // ── expression parsers (precedence ladder) ────────────────────────────────
     ast::ExprPtr parse_expr();
+    ast::ExprPtr parse_iter();        // >> (lowest precedence)
     ast::ExprPtr parse_comparison();
     ast::ExprPtr parse_additive();
     ast::ExprPtr parse_multiplicative();

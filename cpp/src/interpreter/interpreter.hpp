@@ -52,6 +52,8 @@ private:
     ValuePtr eval_cond     (const ast::CondExpr&      e, std::shared_ptr<Environment> env);
     ValuePtr eval_hash_lit (const ast::HashLiteral&   e, std::shared_ptr<Environment> env);
     ValuePtr eval_callable (const ast::CallableExpr&  e, std::shared_ptr<Environment> env);
+    ValuePtr eval_dyn_member(const ast::DynMemberExpr& e, std::shared_ptr<Environment> env);
+    ValuePtr eval_iter     (const ast::IterExpr&       e, std::shared_ptr<Environment> env);
 
     // ── call dispatch ─────────────────────────────────────────────────────────
     ValuePtr call_value(ValuePtr callee,
