@@ -1,0 +1,60 @@
+// Recursive Sieve of Eratosthenes
+// Linked list built from hashes; no arrays or loops required.
+
+// ── list primitives ───────────────────────────────────────────────────────────
+
+empty = { is_empty : int = 1 }
+
+Node = {
+    is_empty : int = 0
+    value    : int = 0
+    next            = empty
+
+    () = (v : int, n) {
+        self.value <- v
+        self.next  <- n
+    }
+}
+
+// ── helpers ───────────────────────────────────────────────────────────────────
+
+range = (lo : int, hi : int) {
+    ? lo > hi { empty } { Node(lo, range(lo + 1, hi)) }
+}
+
+filter = (list, pred) {
+    ? list.is_empty { empty } {
+        ? pred(list.value) {
+            Node(list.value, filter(list.next, pred))
+        } {
+            filter(list.next, pred)
+        }
+    }
+}
+
+// ── sieve ─────────────────────────────────────────────────────────────────────
+
+sieve = (list) {
+    ? list.is_empty { empty } {
+        p : int = list.value
+        Node(p, sieve(
+            filter(list.next, (n : int) { n % p != 0 })
+        ))
+    }
+}
+
+// ── run and print ─────────────────────────────────────────────────────────────
+
+primes = sieve(range(2, 50))
+
+print_list = (list) {
+    ? list.is_empty 
+    {
+    } 
+    {
+        print(list.value)
+        print_list(list.next)
+    }
+}
+
+print_list(primes)
