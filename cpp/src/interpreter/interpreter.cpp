@@ -5,7 +5,7 @@
 
 namespace lang {
 
-// ── construction ──────────────────────────────────────────────────────────────
+// --- construction -------------------------------------------------------
 
 Interpreter::Interpreter(bool verbose)
     : globals_(std::make_shared<Environment>())
@@ -32,14 +32,14 @@ void Interpreter::register_builtins() {
     globals_->define("print", Value::from(print_callable));
 }
 
-// ── program entry ─────────────────────────────────────────────────────────────
+// --- program entry --------------------------------------------------------------
 
 void Interpreter::run(const ast::Program& program) {
     for (auto& stmt : program.statements)
         exec(*stmt, globals_);
 }
 
-// ── statement execution ───────────────────────────────────────────────────────
+// --- statement execution --------------------------------------------------------------
 
 ValuePtr Interpreter::exec(const ast::Stmt& stmt, std::shared_ptr<Environment> env) {
     if (auto* s = dynamic_cast<const ast::DeclStmt*>(&stmt))
@@ -93,7 +93,7 @@ ValuePtr Interpreter::exec_expr_stmt(const ast::ExprStmt& s,
     return result;
 }
 
-// ── expression evaluation ─────────────────────────────────────────────────────
+// --- expression evaluation --------------------------------------------------------------
 
 ValuePtr Interpreter::eval(const ast::Expr& expr,
                             std::shared_ptr<Environment> env) {
@@ -235,12 +235,14 @@ ValuePtr Interpreter::eval_callable(const ast::CallableExpr& e,
     return Value::from(fn);
 }
 
-// ── call dispatch ─────────────────────────────────────────────────────────────
+// --- call dispatch ------------------------------------------------------
 
 ValuePtr Interpreter::call_value(ValuePtr callee,
                                   const std::vector<ValuePtr>& args,
                                   ValuePtr receiver) {
-    // ── Hash constructor call ────────────────────────────────────────────────
+
+    // --- Hash constructor call ------------------------------------------------
+
     if (callee->is_hash()) {
         HashPtr tmpl     = callee->as_hash();
         HashPtr instance = tmpl->clone();
@@ -253,7 +255,8 @@ ValuePtr Interpreter::call_value(ValuePtr callee,
         return Value::from(instance);
     }
 
-    // ── Callable call ────────────────────────────────────────────────────────
+    // --- Callable call --------------------------------------------------
+
     if (callee->is_callable())
         return call_callable(*callee->as_callable(), args, receiver);
 
@@ -264,11 +267,12 @@ ValuePtr Interpreter::call_value(ValuePtr callee,
 ValuePtr Interpreter::call_callable(const Callable& fn,
                                      const std::vector<ValuePtr>& args,
                                      ValuePtr self_val) {
-    // ── Native built-in: print ───────────────────────────────────────────────
+    // --- Native built-in: print --------------------------------------------------
+
     if (fn.param_names.size() == 1 &&
         fn.param_names[0] == "__native_print__value") {
         if (!args.empty())
-            std::cout << args[0]->to_display_string() << "\n";
+            std::cout << args[0]->to_display_string();
         return Value::nil();
     }
 

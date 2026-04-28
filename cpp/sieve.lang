@@ -1,7 +1,7 @@
 // Recursive Sieve of Eratosthenes
 // Linked list built from hashes; no arrays or loops required.
 
-// ── list primitives ───────────────────────────────────────────────────────────
+// --------------------- list primitives ---------------------
 
 empty = { is_empty : int = 1 }
 
@@ -16,7 +16,7 @@ Node = {
     }
 }
 
-// ── helpers ───────────────────────────────────────────────────────────────────
+// --------------------- helpers ---------------------
 
 range = (lo : int, hi : int) {
     ? lo > hi { empty } { Node(lo, range(lo + 1, hi)) }
@@ -32,7 +32,7 @@ filter = (list, pred) {
     }
 }
 
-// ── sieve ─────────────────────────────────────────────────────────────────────
+// --------------------- sieve ---------------------
 
 sieve = (list) {
     ? list.is_empty { empty } {
@@ -43,14 +43,12 @@ sieve = (list) {
     }
 }
 
-// ── run and print ─────────────────────────────────────────────────────────────
+// --------------------- run and print ---------------------
 
 primes = sieve(range(2, 50))
 
 print_list = (list) {
-    ? list.is_empty 
-    {
-    } 
+    ? list.is_empty { } 
     {
         print(list.value)
         print_list(list.next)

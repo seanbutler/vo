@@ -1,0 +1,45 @@
+// Sieve of Eratosthenes
+// Result is an associative array: key = prime, value = ordinal index.
+// Inline hash literals replace all type templates and constructors.
+
+empty = { is_empty : int = 1 }
+
+range = (lo : int, hi : int) {
+    ? lo > hi { empty } {
+        { is_empty : int = 0  num : int = lo  next = range(lo + 1, hi) }
+    }
+}
+
+filter = (list, pred) {
+    ? list.is_empty { empty } {
+        ? pred(list.num) {
+            { is_empty : int = 0  num : int = list.num  next = filter(list.next, pred) }
+        } {
+            filter(list.next, pred)
+        }
+    }
+}
+
+sieve = (candidates, idx : int) {
+    ? candidates.is_empty { empty } {
+        p : int = candidates.num
+        { is_empty : int = 0
+          key   : int = idx
+          value : int = p
+          next = sieve(filter(candidates.next, (n : int) { n % p != 0 }), idx + 1) }
+    }
+}
+
+
+print_map = (map) {
+    ? map.is_empty { } {
+        print(map.key) print (", ") print(map.value) print ("\n")
+        print_map(map.next)
+    }
+}
+
+primes1 = sieve(range(2, 100), 1)
+print_map(primes1)
+
+primes2 = sieve(range(100, 200), 1)
+print_map(primes2)

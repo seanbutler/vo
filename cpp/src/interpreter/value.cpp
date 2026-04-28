@@ -20,10 +20,7 @@ ValuePtr HashInstance::get(const std::string& name) const {
 }
 
 void HashInstance::set(const std::string& name, ValuePtr v) {
-    auto it = members.find(name);
-    if (it == members.end())
-        throw std::runtime_error("Hash has no member '" + name + "'");
-    it->second = std::move(v);
+    members[name] = std::move(v);
 }
 
 bool HashInstance::has(const std::string& name) const {
