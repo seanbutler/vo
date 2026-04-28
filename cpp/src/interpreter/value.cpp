@@ -36,6 +36,7 @@ bool Value::is_truthy() const {
     case Kind::String:   return !as_string().empty();
     case Kind::Hash:     return true;   // hashes are always truthy (use is_empty member pattern)
     case Kind::Callable: return true;
+    case Kind::NativeCallable: return true;
     }
     return false;
 }
@@ -46,6 +47,7 @@ std::string Value::to_display_string() const {
     case Kind::Integer:  return std::to_string(as_int());
     case Kind::String:   return as_string();
     case Kind::Callable: return "<callable>";
+    case Kind::NativeCallable: return "<native:" + as_native_callable()->name + ">";
     case Kind::Hash: {
         std::ostringstream oss;
         oss << "{ ";

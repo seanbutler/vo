@@ -104,6 +104,10 @@ std::vector<Token> Lexer::tokenize() {
         advance(); // consume single-char token
 
         switch (c) {
+        case '$':
+            if (peek() == '$') { advance(); tokens.push_back({ TokenType::DollarDollar, "$$", ln, cl }); }
+            else error("Unexpected character '$'");
+            break;
         case '+': tokens.push_back({ TokenType::Plus,    "+", ln, cl }); break;
         case '-': tokens.push_back({ TokenType::Minus,   "-", ln, cl }); break;
         case '*': tokens.push_back({ TokenType::Star,    "*", ln, cl }); break;

@@ -1,0 +1,24 @@
+// Foreign function binding helpers (optional include)
+// Usage: @ "ffi.lang"
+//
+// $$ binds one fully prepared foreign-function spec.
+// bind_lib keeps library iteration and spec shaping in lang.
+
+bind_one = (lib : string, abi : string, sig) {
+    spec = {
+        lib : string = lib
+        abi : string = abi
+    }
+    sig >> (k, v) {
+        spec.(k) <- v
+    }
+    $$ spec
+}
+
+bind_lib = (decl) {
+    result = {}
+    decl.functions >> (name, sig) {
+        result.(name) <- bind_one(decl.lib, decl.abi, sig)
+    }
+    result
+}

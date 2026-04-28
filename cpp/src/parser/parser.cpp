@@ -168,6 +168,10 @@ ExprPtr Parser::parse_unary() {
         advance();
         return std::make_shared<UnaryExpr>("-", parse_postfix());
     }
+    if (check(TT::DollarDollar)) {
+        advance();
+        return std::make_shared<UnaryExpr>("$$", parse_postfix());
+    }
     return parse_postfix();
 }
 

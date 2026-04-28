@@ -9,6 +9,9 @@ enum class TokenType {
     // Literals
     Integer, String, Identifier,
 
+    // Foreign binding
+    DollarDollar,   // $$
+
     // Binding operators
     Assign,   // =
     Arrow,    // <-

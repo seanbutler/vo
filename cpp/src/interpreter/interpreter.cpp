@@ -1,12 +1,91 @@
 #include "interpreter/interpreter.hpp"
 #include "lexer/lexer.hpp"
 #include "parser/parser.hpp"
+#include <dlfcn.h>
+#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <cstdlib>
 #include <cassert>
 
 namespace lang {
+
+namespace {
+
+using SharedLibraryHandle = std::shared_ptr<void>;
+
+SharedLibraryHandle open_library(const std::string& path) {
+    void* handle = dlopen(path.c_str(), RTLD_LAZY);
+    if (!handle)
+        throw RuntimeError("dlopen failed for '" + path + "': " + (dlerror() ? dlerror() : "unknown error"));
+    return SharedLibraryHandle(handle, [](void* h) {
+        if (h) dlclose(h);
+    });
+}
+
+std::string get_required_string(HashPtr hash, const std::string& key) {
+    if (!hash->has(key))
+        throw RuntimeError("Missing required foreign spec field '" + key + "'");
+    ValuePtr value = hash->get(key);
+    if (!value->is_string())
+        throw RuntimeError("Foreign spec field '" + key + "' must be a string");
+    return value->as_string();
+}
+
+int count_params(HashPtr params_hash) {
+    int count = 0;
+    while (true) {
+        std::string name = "p" + std::to_string(count + 1);
+        if (!params_hash->has(name)) break;
+        ++count;
+    }
+    return count;
+}
+
+std::vector<std::string> read_param_types(HashPtr spec_hash) {
+    if (!spec_hash->has("params")) return {};
+    ValuePtr params_val = spec_hash->get("params");
+    if (!params_val->is_hash())
+        throw RuntimeError("Foreign spec field 'params' must be a hash");
+    HashPtr params_hash = params_val->as_hash();
+    int arity = count_params(params_hash);
+    std::vector<std::string> result;
+    result.reserve(arity);
+    for (int i = 1; i <= arity; ++i) {
+        ValuePtr type_val = params_hash->get("p" + std::to_string(i));
+        if (!type_val->is_string())
+            throw RuntimeError("Foreign param type must be a string");
+        result.push_back(type_val->as_string());
+    }
+    return result;
+}
+
+void require_arity(const std::vector<ValuePtr>& args, size_t expected) {
+    if (args.size() != expected) {
+        throw RuntimeError("Native call expected " + std::to_string(expected) +
+                           " argument(s), got " + std::to_string(args.size()));
+    }
+}
+
+int64_t require_int(ValuePtr arg, const std::string& type_name) {
+    if (!arg->is_int())
+        throw RuntimeError("Native argument for type '" + type_name + "' must be an int");
+    return arg->as_int();
+}
+
+const char* require_cstring(ValuePtr arg) {
+    if (!arg->is_string())
+        throw RuntimeError("Native argument for type 'cstring' must be a string");
+    return arg->as_string().c_str();
+}
+
+void require_null_ptr_out(ValuePtr arg) {
+    if (!(arg->is_nil() || arg->is_hash()))
+        throw RuntimeError("Native argument for type 'ptr_out' must be {} / nil");
+}
+
+} // namespace
 
 // --- construction -------------------------------------------------------
 
@@ -197,6 +276,7 @@ ValuePtr Interpreter::eval_unary(const ast::UnaryExpr& e,
                                   std::shared_ptr<Environment> env) {
     ValuePtr v = eval(*e.operand, env);
     if (e.op == "-" && v->is_int()) return Value::from(-v->as_int());
+    if (e.op == "$$") return bind_foreign_function(v);
     throw RuntimeError("Unsupported unary operator '" + e.op + "'");
 }
 
@@ -328,8 +408,105 @@ ValuePtr Interpreter::call_value(ValuePtr callee,
     if (callee->is_callable())
         return call_callable(*callee->as_callable(), args, receiver);
 
+    if (callee->is_native_callable())
+        return callee->as_native_callable()->invoke(args);
+
     throw RuntimeError("Cannot call a non-callable value: " +
                        callee->to_display_string());
+}
+
+ValuePtr Interpreter::bind_foreign_function(ValuePtr spec) {
+    if (!spec->is_hash())
+        throw RuntimeError("$$ expects a hash spec");
+
+    HashPtr spec_hash = spec->as_hash();
+    const std::string lib = get_required_string(spec_hash, "lib");
+    const std::string abi = get_required_string(spec_hash, "abi");
+    const std::string symbol = get_required_string(spec_hash, "symbol");
+    const std::string return_type = get_required_string(spec_hash, "returns");
+    const std::vector<std::string> param_types = read_param_types(spec_hash);
+
+    if (abi != "c")
+        throw RuntimeError("Only abi='c' is supported by $$");
+
+    SharedLibraryHandle handle = open_library(lib);
+    dlerror();
+    void* raw_symbol = dlsym(handle.get(), symbol.c_str());
+    const char* err = dlerror();
+    if (err || !raw_symbol)
+        throw RuntimeError("dlsym failed for '" + symbol + "': " + std::string(err ? err : "unknown error"));
+
+    auto native = std::make_shared<NativeCallable>();
+    native->name = symbol;
+    native->library_handle = handle;
+
+    if (param_types.empty() && return_type == "int") {
+        using Fn = int (*)();
+        Fn fn = reinterpret_cast<Fn>(raw_symbol);
+        native->invoke = [fn](const std::vector<ValuePtr>& args) {
+            require_arity(args, 0);
+            return Value::from(static_cast<int64_t>(fn()));
+        };
+    } else if (param_types.size() == 1 && param_types[0] == "int" && return_type == "int") {
+        using Fn = int (*)(int);
+        Fn fn = reinterpret_cast<Fn>(raw_symbol);
+        native->invoke = [fn](const std::vector<ValuePtr>& args) {
+            require_arity(args, 1);
+            return Value::from(static_cast<int64_t>(fn(static_cast<int>(require_int(args[0], "int")))));
+        };
+    } else if (param_types.size() == 1 && param_types[0] == "uint" && return_type == "void") {
+        using Fn = void (*)(unsigned int);
+        Fn fn = reinterpret_cast<Fn>(raw_symbol);
+        native->invoke = [fn](const std::vector<ValuePtr>& args) {
+            require_arity(args, 1);
+            fn(static_cast<unsigned int>(require_int(args[0], "uint")));
+            return Value::nil();
+        };
+    } else if (param_types.size() == 1 && param_types[0] == "cstring" && return_type == "int") {
+        using Fn = int (*)(const char*);
+        Fn fn = reinterpret_cast<Fn>(raw_symbol);
+        native->invoke = [fn](const std::vector<ValuePtr>& args) {
+            require_arity(args, 1);
+            return Value::from(static_cast<int64_t>(fn(require_cstring(args[0]))));
+        };
+    } else if (param_types.size() == 1 && param_types[0] == "cstring" && return_type == "usize") {
+        using Fn = size_t (*)(const char*);
+        Fn fn = reinterpret_cast<Fn>(raw_symbol);
+        native->invoke = [fn](const std::vector<ValuePtr>& args) {
+            require_arity(args, 1);
+            return Value::from(static_cast<int64_t>(fn(require_cstring(args[0]))));
+        };
+    } else if (param_types.size() == 2 && param_types[0] == "cstring" && param_types[1] == "cstring" && return_type == "int") {
+        using Fn = int (*)(const char*, const char*);
+        Fn fn = reinterpret_cast<Fn>(raw_symbol);
+        native->invoke = [fn](const std::vector<ValuePtr>& args) {
+            require_arity(args, 2);
+            return Value::from(static_cast<int64_t>(fn(require_cstring(args[0]), require_cstring(args[1]))));
+        };
+    } else if (param_types.size() == 3 && param_types[0] == "cstring" && param_types[1] == "cstring" && param_types[2] == "usize" && return_type == "int") {
+        using Fn = int (*)(const char*, const char*, size_t);
+        Fn fn = reinterpret_cast<Fn>(raw_symbol);
+        native->invoke = [fn](const std::vector<ValuePtr>& args) {
+            require_arity(args, 3);
+            return Value::from(static_cast<int64_t>(
+                fn(require_cstring(args[0]), require_cstring(args[1]),
+                   static_cast<size_t>(require_int(args[2], "usize")))));
+        };
+    } else if (param_types.size() == 3 && param_types[0] == "cstring" && param_types[1] == "ptr_out" && param_types[2] == "int" && return_type == "long") {
+        using Fn = long (*)(const char*, char**, int);
+        Fn fn = reinterpret_cast<Fn>(raw_symbol);
+        native->invoke = [fn](const std::vector<ValuePtr>& args) {
+            require_arity(args, 3);
+            require_null_ptr_out(args[1]);
+            return Value::from(static_cast<int64_t>(
+                fn(require_cstring(args[0]), nullptr,
+                   static_cast<int>(require_int(args[2], "int")))));
+        };
+    } else {
+        throw RuntimeError("Unsupported foreign signature for symbol '" + symbol + "'");
+    }
+
+    return Value::from(native);
 }
 
 ValuePtr Interpreter::call_callable(const Callable& fn,

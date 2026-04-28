@@ -1,0 +1,95 @@
+// C stdlib practical starter set (12 functions)
+// Descriptor-only metadata for future FFI binding/codegen.
+// Usage idea: @ "cstd12.lang"
+
+cstd12 = {
+    lib : string = "libc.so.6"
+    abi : string = "c"
+
+    functions = {
+        strlen = {
+            symbol : string = "strlen"
+            params = { p1 : string = "cstring" }
+            returns : string = "usize"
+            header : string = "string.h"
+        }
+
+        strcmp = {
+            symbol : string = "strcmp"
+            params = { p1 : string = "cstring"  p2 : string = "cstring" }
+            returns : string = "int"
+            header : string = "string.h"
+        }
+
+        strncmp = {
+            symbol : string = "strncmp"
+            params = { p1 : string = "cstring"  p2 : string = "cstring"  p3 : string = "usize" }
+            returns : string = "int"
+            header : string = "string.h"
+        }
+
+        abs = {
+            symbol : string = "abs"
+            params = { p1 : string = "int" }
+            returns : string = "int"
+            header : string = "stdlib.h"
+        }
+
+        atoi = {
+            symbol : string = "atoi"
+            params = { p1 : string = "cstring" }
+            returns : string = "int"
+            header : string = "stdlib.h"
+        }
+
+        strtol = {
+            symbol : string = "strtol"
+            params = { p1 : string = "cstring"  p2 : string = "ptr_out"  p3 : string = "int" }
+            returns : string = "long"
+            header : string = "stdlib.h"
+            note : string = "p2 is endptr; often null in simple bindings"
+        }
+
+        toupper = {
+            symbol : string = "toupper"
+            params = { p1 : string = "int" }
+            returns : string = "int"
+            header : string = "ctype.h"
+        }
+
+        tolower = {
+            symbol : string = "tolower"
+            params = { p1 : string = "int" }
+            returns : string = "int"
+            header : string = "ctype.h"
+        }
+
+        isalnum = {
+            symbol : string = "isalnum"
+            params = { p1 : string = "int" }
+            returns : string = "int"
+            header : string = "ctype.h"
+        }
+
+        isalpha = {
+            symbol : string = "isalpha"
+            params = { p1 : string = "int" }
+            returns : string = "int"
+            header : string = "ctype.h"
+        }
+
+        rand = {
+            symbol : string = "rand"
+            params = { }
+            returns : string = "int"
+            header : string = "stdlib.h"
+        }
+
+        srand = {
+            symbol : string = "srand"
+            params = { p1 : string = "uint" }
+            returns : string = "void"
+            header : string = "stdlib.h"
+        }
+    }
+}

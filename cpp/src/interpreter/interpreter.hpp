@@ -65,6 +65,8 @@ private:
                            const std::vector<ValuePtr>& args,
                            ValuePtr self_val);
 
+    ValuePtr bind_foreign_function(ValuePtr spec);
+
     // ── built-ins ─────────────────────────────────────────────────────────────
     void register_builtins();
 };
