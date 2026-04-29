@@ -2,10 +2,12 @@
 // Result is an associative array: key = prime, value = ordinal index.
 // Inline hash literals replace all type templates and constructors.
 
+@ "stdio.lang"
+
 empty = { is_empty : int = 1 }
 
 range = (lo : int, hi : int) {
-    ? lo > hi { empty } 
+    ? lo > hi { empty }
     {
         { is_empty : int = 0  num : int = lo  next = range(lo + 1, hi) }
     }
@@ -34,13 +36,15 @@ sieve = (candidates, idx : int) {
 
 print_map = (map) {
     ? map.is_empty { } {
-        print(map.key) print (", ") print(map.value) print ("\n")
+        printf_s("%s", "{ ")
+        printf_i("%d", map.key)
+        printf_s("%s", ", ")
+        printf_i("%d", map.value)
+        printf_s("%s", " }, ")
         print_map(map.next)
     }
 }
 
-primes1 = sieve(range(2, 100), 1)
-print_map(primes1)
-
-primes2 = sieve(range(100, 200), 1)
-print_map(primes2)
+primes = sieve(range(2, 1750), 1)
+print_map(primes)
+printf_s("%s", "\n")

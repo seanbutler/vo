@@ -1,5 +1,6 @@
 @ "cstdio16.lang"
 @ "ffi.lang"
+@ "stdio.lang"
 
 _color_io = bind_lib({
     lib : string = cstdio16.lib
@@ -15,32 +16,32 @@ _esc = () {
 
 _set_color = (code : string) {
     _esc()
-    print("[")
-    print(code)
-    print("m")
+    printf_s("%s", "[")
+    printf_s("%s", code)
+    printf_s("%s", "m")
 }
 
 _reset_color = () {
     _esc()
-    print("[0m")
+    printf_s("%s", "[0m")
 }
 
 print_pass = (name : string) {
     _set_color("32")
-    print("PASS")
+    printf_s("%s", "PASS")
     _reset_color()
-    print(" ")
-    print(name)
-    print("\n")
+    printf_s("%s", " ")
+    printf_s("%s", name)
+    printf_s("%s", "\n")
 }
 
 print_fail = (name : string) {
     _set_color("31")
-    print("FAIL")
+    printf_s("%s", "FAIL")
     _reset_color()
-    print(" ")
-    print(name)
-    print("\n")
+    printf_s("%s", " ")
+    printf_s("%s", name)
+    printf_s("%s", "\n")
 }
 
 report_test = (name : string, ok : int) {

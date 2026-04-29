@@ -1,6 +1,8 @@
 // Recursive Sieve of Eratosthenes
 // Linked list built from hashes; no arrays or loops required.
 
+@ "stdio.lang"
+
 // --------------------- list primitives ---------------------
 
 empty = { is_empty : int = 1 }
@@ -48,9 +50,8 @@ sieve = (list) {
 primes = sieve(range(2, 50))
 
 print_list = (list) {
-    ? list.is_empty { } 
-    {
-        print(list.value)
+    ? list.is_empty { } {
+        printf_i("%d\n", list.value)
         print_list(list.next)
     }
 }

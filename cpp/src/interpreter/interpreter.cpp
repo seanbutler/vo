@@ -103,21 +103,6 @@ Interpreter::Interpreter(bool verbose)
 }
 
 void Interpreter::register_builtins() {
-    // print(value) — displays any value
-    auto print_fn = std::make_shared<Callable>();
-    print_fn->param_names = { "value" };
-    // Body is empty — handled as a native override in call_value via name lookup
-    // We store a special marker hash instead.
-    // Simpler: wrap native functions as HashInstances with a flag.
-    // Cleanest for this codebase: store a Callable with no body and intercept
-    // in call_callable based on a sentinel.  We use a dedicated NativeCallable
-    // approach via std::function stored in a subclass.
-    // For simplicity here we just register print as a Value::Callable whose
-    // body is empty — then intercept by param_names == {"__native_print"}.
-    auto print_callable = std::make_shared<Callable>();
-    print_callable->param_names = { "__native_print__value" };
-    print_callable->closure     = globals_;
-    globals_->define("print", Value::from(print_callable));
 }
 
 // --- program entry --------------------------------------------------------------
@@ -504,6 +489,14 @@ ValuePtr Interpreter::bind_foreign_function(ValuePtr spec) {
             require_arity(args, 1);
             return Value::from(static_cast<int64_t>(fn(require_cstring(args[0]))));
         };
+    } else if (param_types.size() == 2 && param_types[0] == "cstring" && param_types[1] == "int" && return_type == "int") {
+        using Fn = int (*)(const char*, int);
+        Fn fn = reinterpret_cast<Fn>(raw_symbol);
+        native->invoke = [fn](const std::vector<ValuePtr>& args) {
+            require_arity(args, 2);
+            return Value::from(static_cast<int64_t>(
+                fn(require_cstring(args[0]), static_cast<int>(require_int(args[1], "int")))));
+        };
     } else if (param_types.size() == 1 && param_types[0] == "cstring" && return_type == "usize") {
         using Fn = size_t (*)(const char*);
         Fn fn = reinterpret_cast<Fn>(raw_symbol);
@@ -562,15 +555,6 @@ ValuePtr Interpreter::bind_foreign_function(ValuePtr spec) {
 ValuePtr Interpreter::call_callable(const Callable& fn,
                                      const std::vector<ValuePtr>& args,
                                      ValuePtr self_val) {
-    // --- Native built-in: print --------------------------------------------------
-
-    if (fn.param_names.size() == 1 &&
-        fn.param_names[0] == "__native_print__value") {
-        if (!args.empty())
-            std::cout << args[0]->to_display_string();
-        return Value::nil();
-    }
-
     if (args.size() != fn.param_names.size()) {
         throw RuntimeError("Expected " + std::to_string(fn.param_names.size()) +
                            " argument(s), got " + std::to_string(args.size()));
