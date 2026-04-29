@@ -30,9 +30,8 @@ enum class TokenType {
     LParen, RParen,
     LBrace, RBrace,
 
-    // Conditional (aliased pair)
+    // Conditional
     Question,  // ?
-    If,        // if
 
     // Module (aliased pair)
     From,      // from

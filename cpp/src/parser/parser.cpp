@@ -233,7 +233,7 @@ ExprPtr Parser::parse_primary() {
     }
 
     // Conditional:  '?' / 'if'
-    if (check(TT::Question) || check(TT::If))
+    if (check(TT::Question))
         return parse_cond();
 
     // Callable:  '(' params ')' '{' body '}'

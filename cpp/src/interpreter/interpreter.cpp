@@ -122,9 +122,11 @@ void Interpreter::register_builtins() {
 
 // --- program entry --------------------------------------------------------------
 
-void Interpreter::run(const ast::Program& program) {
+ValuePtr Interpreter::run(const ast::Program& program) {
+    ValuePtr last = Value::nil();
     for (auto& stmt : program.statements)
-        exec(*stmt, globals_);
+        last = exec(*stmt, globals_);
+    return last;
 }
 
 // --- statement execution --------------------------------------------------------------
