@@ -21,7 +21,7 @@ class Interpreter {
 public:
     explicit Interpreter(bool verbose = true);
 
-    void run(const ast::Program& program);
+    ValuePtr run(const ast::Program& program);
 
     // Exposed so that built-ins and tests can inspect globals.
     std::shared_ptr<Environment> globals() const { return globals_; }
