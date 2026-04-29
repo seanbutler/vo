@@ -33,8 +33,7 @@ enum class TokenType {
     // Conditional
     Question,  // ?
 
-    // Module (aliased pair)
-    From,      // from
+    // Module import
     At,        // @
 
     Eof
