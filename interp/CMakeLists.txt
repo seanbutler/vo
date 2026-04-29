@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.16)
-project(lang CXX)
+project(vo CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-add_executable(lang
+add_executable(vo
     src/main.cpp
     src/lexer/lexer.cpp
     src/parser/parser.cpp
@@ -14,7 +14,7 @@ add_executable(lang
     src/interpreter/interpreter.cpp
 )
 
-target_include_directories(lang PRIVATE src)
-target_compile_options(lang PRIVATE -Wall -Wextra -Wpedantic)
-target_link_libraries(lang PRIVATE dl)
+target_include_directories(vo PRIVATE src)
+target_compile_options(vo PRIVATE -Wall -Wextra -Wpedantic)
+target_link_libraries(vo PRIVATE dl)
 

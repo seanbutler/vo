@@ -1,5 +1,5 @@
-@ "cstdio16.lang"
-@ "ffi.lang"
+@ "lib/cstdio16.vo"
+@ "lib/ffi.vo"
 
 // printf("%s", str) — print a string, no implicit newline
 _spec_printf_s = {

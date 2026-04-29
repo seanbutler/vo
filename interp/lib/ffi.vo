@@ -1,5 +1,5 @@
 // Foreign function binding helpers (optional include)
-// Usage: @ "ffi.lang"
+// Usage: @ "lib/ffi.vo"
 //
 // $$ binds one fully prepared foreign-function spec.
 // bind_lib keeps library iteration and spec shaping in lang.

@@ -1,4 +1,4 @@
-// Standard library (optional include with @ "stdlib.lang").
+// Standard library (optional include with @ "lib/stdlib.vo").
 // All functions are expressed in terms of core language operators.
 
 // ----- clone ---------------------------------------------------------------

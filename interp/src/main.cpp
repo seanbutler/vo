@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
 
     try {
         if (file.empty()) {
-            std::cerr << "Usage: lang <file.lang> [--trace]\n";
+            std::cerr << "Usage: vo <file.vo> [--trace]\n";
             return 1;
         }
 

@@ -1,6 +1,6 @@
-@ "cstdio16.lang"
-@ "ffi.lang"
-@ "stdio.lang"
+@ "lib/cstdio16.vo"
+@ "lib/ffi.vo"
+@ "lib/stdio.vo"
 
 _color_io = bind_lib({
     lib : string = cstdio16.lib

@@ -1,6 +1,6 @@
-@ "cstd12.lang"
-@ "ffi.lang"
-@ "tests/color.lang"
+@ "lib/cstd12.vo"
+@ "lib/ffi.vo"
+@ "tests/color.vo"
 
 ok : int <- 1
 

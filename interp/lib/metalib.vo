@@ -1,5 +1,5 @@
 // Meta conventions library (optional include)
-// Usage: @ "meta-lib.lang"
+// Usage: @ "lib/meta-lib.vo"
 //
 // This file defines convention helpers for shaping module interfaces.
 // It is intentionally policy-oriented and layered on top of core language features.

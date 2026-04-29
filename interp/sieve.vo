@@ -1,7 +1,7 @@
 // Recursive Sieve of Eratosthenes
 // Linked list built from hashes; no arrays or loops required.
 
-@ "stdio.lang"
+@ "./lib/stdio.vo"
 
 // --------------------- list primitives ---------------------
 

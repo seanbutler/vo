@@ -1,7 +1,7 @@
-@ "cmath.lang"
-@ "ffi.lang"
-@ "stdlib.lang"
-@ "tests/color.lang"
+@ "lib/cmath.vo"
+@ "lib/ffi.vo"
+@ "lib/stdlib.vo"
+@ "tests/color.vo"
 
 ok : int <- 1
 

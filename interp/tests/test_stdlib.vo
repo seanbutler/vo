@@ -1,5 +1,5 @@
-@ "stdlib.lang"
-@ "tests/color.lang"
+@ "lib/stdlib.vo"
+@ "tests/color.vo"
 
 ok : int <- 1
 

@@ -1,6 +1,6 @@
 // C math starter set
 // Descriptor-only metadata for future FFI binding/codegen.
-// Usage idea: @ "cmath.lang"
+// Usage idea: @ "lib/cmath.vo"
 //
 // Most of these functions are double-based. The current lang runtime does not
 // yet expose floating-point values, so this file is primarily a forward-looking

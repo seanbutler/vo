@@ -1,0 +1,10 @@
+@ "tests/test_stdlib.vo"
+@ "tests/test_metalib.vo"
+@ "tests/test_ffi.vo"
+@ "tests/test_cstd12.vo"
+@ "tests/test_cstdio16.vo"
+@ "tests/test_cmath.vo"
+@ "tests/color.vo"
+
+all_tests_ok : int = stdlib_test_ok * metalib_test_ok * ffi_test_ok * cstd12_test_ok * cstdio16_test_ok * cmath_test_ok
+report_test("all-tests", all_tests_ok)

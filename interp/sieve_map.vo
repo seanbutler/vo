@@ -2,7 +2,7 @@
 // Result is an associative array: key = prime, value = ordinal index.
 // Inline hash literals replace all type templates and constructors.
 
-@ "stdio.lang"
+@ "lib/stdio.vo"
 
 empty = { is_empty : int = 1 }
 
