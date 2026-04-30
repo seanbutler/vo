@@ -1,0 +1,79 @@
+@ "tests/color.vo"
+@ "lib/stdlib.vo"
+
+ok : int := 1
+
+// ----- _-prefixed slots are directly accessible -----
+
+obj = { x : int = 1  _hidden : int = 99  _count : int = 0 }
+
+? obj.x       == 1  { } { ok := 0 }
+? obj._hidden == 99 { } { ok := 0 }
+
+// ----- _-prefixed slots are invisible to >> -----
+
+visible : int := 0
+obj >> (k, v) { ? k == "_hidden" { visible := 1 } { } }
+? visible == 0 { } { ok := 0 }
+
+// has() uses >> so private slots are not found
+? has(obj, "x")       == 1 { } { ok := 0 }
+? has(obj, "_hidden") == 0 { } { ok := 0 }
+
+// size() only counts public slots
+? size(obj) == 1 { } { ok := 0 }
+
+// ----- merge does not copy _-prefixed slots -----
+
+base   = { x : int = 1  _internal : int = 42 }
+extra  = { y : int = 2 }
+merged = merge(base, extra)
+
+? merged.x == 1 { } { ok := 0 }
+? merged.y == 2 { } { ok := 0 }
+? has(merged, "_internal") == 0 { } { ok := 0 }
+
+// ----- clone does not copy _-prefixed slots -----
+
+src    = { a : int = 7  _secret : int = 123 }
+copied = clone(src)
+
+? copied.a == 7 { } { ok := 0 }
+? has(copied, "_secret") == 0 { } { ok := 0 }
+
+// ----- private state in a hash with methods -----
+
+Counter = {
+    _count : int = 0
+    inc   = () { self._count := self._count + 1 }
+    value = () { self._count }
+}
+
+c = Counter()
+c.inc()
+c.inc()
+c.inc()
+? c.value() == 3   { } { ok := 0 }
+? has(c, "_count") == 0 { } { ok := 0 }
+
+// ----- _ delegation still works -----
+
+Base   = { greet = () { "hello" } }
+Child  = subtype(Base, { x : int = 1 })
+ch     = Child()
+
+? ch.greet() == "hello" { } { ok := 0 }
+? has(ch, "_")          == 0 { } { ok := 0 }   // _ hidden from >>
+
+// ----- identifiers with _ not at start are unaffected -----
+
+old_val   : int = 10
+new_thing : int = 20
+snake_case = { a_b : int = 5  c_d : int = 6 }
+
+? old_val == 10              { } { ok := 0 }
+? snake_case.a_b == 5        { } { ok := 0 }
+? has(snake_case, "a_b") == 1 { } { ok := 0 }
+
+private_test_ok = ok
+report_test("private", private_test_ok)

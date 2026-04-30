@@ -1,5 +1,23 @@
 # TODO
 
+## Note: How to read this TODO...
+
+Each todo item has a parenthesis in its title with the following form:
+(IMPORTANCE, URGENCY, COST, BENEFIT)
+
+e.g. (COULD, SOONER, SMALL, LARGE)
+
+- MUST, COULD (from MOSCOW)
+- SOONER, LATER simplest possible time priority
+- LOW, HIGH  cost
+- SMALL, LARGE benefit
+
+This gives us a shorthand to record opinions about this feature useful in ordering and prioriting work.
+- **important:** because it matches our goals
+- **urgency:** because it has beneficial side effects for the project so has to be done before or other external priority from paper or engineering deadlines
+- **cost:** the amount of engineering effort required, LARGE could mean big or complex.
+- **benefit:** are the outcomes extensive from this todo item? either its a big feature, or popular feature or maybe almost nobody will use it
+
 
 ### Interpreter / Execution 
 - Shorten Overall Code Length - Seems Excessive for a Small Language
@@ -7,7 +25,7 @@
 
 ### Execution Efficiency
  - Execution Speed Benchmark Framework
- - Execuion Memory Metrics Report
+ - Execution Memory Metrics Report
  - AST Visualisation
  - Memory Visualisation
  
@@ -25,14 +43,56 @@
 ~{ body }                    // infinite
 ```
 
-### null alias for `{}`
+### OOP — inheritance and private slots — DONE
+
+**`_` delegation (interpreter)**
+- `HashInstance::get` walks the `_` slot as a prototype chain before throwing
+- Applies recursively — multi-level inheritance works automatically
+- Assignment (`set`) is always local — never writes through the chain
+- `()` constructor found through `_` chain at call time — no copying needed
+
+**Private slots (interpreter)**
+- Any slot whose name begins with `_` is skipped by `>>` and by `to_display_string`
+- Directly accessible by name: `obj._thing` works as normal
+- `merge`, `clone`, and all stdlib functions built on `>>` naturally exclude private slots
+- The `_` delegation slot is itself private under this rule — no special case needed
+
+**`subtype` (lib/stdlib.vo)**
+- `subtype(parent, overrides)` — merges public slots, sets `_ = parent`, returns child hash
+- Constructor, methods, and data slots all flow through delegation or direct copy
+- Override any slot by including it in `overrides`; method override replaces the slot, parent unaffected
+
+```
+Animal = {
+    sound : string = "..."
+    speak  = () { self.sound }
+    () = (s : string) { self.sound := s }
+}
+Dog    = subtype(Animal, { sound : string = "Woof" })
+Poodle = subtype(Dog,    { size  : string = "small" })
+p = Poodle("Fifi")    // constructor found via _ _ chain
+p.speak()             // method inherited from Animal
+```
+
+
+
+
+### null alias for `{}`  (COULD, SOONER, SMALL, SMALL)
 - `{}` is already the language's null/empty sentinel — used wherever "nothing" is needed
 - Add a stdlib binding so users can write `null` instead of `{}`
 - Simplest implementation: one line in `lib/stdlib.vo` — `null = {}`
 - No language changes required; `null` is just an identifier bound to the empty hash
 - FFI pointer dispatcher should treat empty hash as `NULL` (i.e. `nullptr`) — relevant for SDL3 and any C library that takes optional pointer arguments
 
-### Terminal graphics via ANSI escape codes
+### Bare block `{ }` as zero-arg callable (COULD, LATER, SMALL, SMALL)
+- A syntax change that potentially breaks backward compatability
+- A `{ body }` in expression position with no leading param list is sugar for `() { body }`
+- Makes `func_name = { code }` a callable, invoked as `func_name()`
+- Currently `{ }` is always parsed as a hash literal — parser needs to distinguish
+
+
+
+### Terminal graphics via ANSI escape codes (COULD, SOONER, SMALL, LARGE)
 
 Goal: cursor-addressed terminal output and non-blocking keyboard input — enough for snake, roguelikes, text UI. No curses/ncurses dependency.
 
@@ -210,19 +270,15 @@ SDL.destroy_window(win)
 - Full keyboard event stream (not just current state)
 - Audio (`SDL_audio`)
 
-### Bare block `{ }` as zero-arg callable (COULD LATER)
-- A `{ body }` in expression position with no leading param list is sugar for `() { body }`
-- Makes `func_name = { code }` a callable, invoked as `func_name()`
-- Currently `{ }` is always parsed as a hash literal — parser needs to distinguish
 
-### Lazy boolean operators `&` and `|`
+### Lazy boolean operators `&` and `|` (MUST SOONER)
 - Add `&` (logical AND) and `|` (logical OR) as proper infix operators
 - `a & b` desugars to `? a { b } { 0 }` — short-circuits, no call-frame overhead
 - `a | b` desugars to `? a { 1 } { b }` — short-circuits
 - Precedence: `|` below `&`, both below `!`, above comparison
 - Replaces the `logic.and` / `logic.or` callable workaround for hot paths
 
-### Tail-call optimisation (TCO)
+### Tail-call optimisation (TCO) (COULD  LATER)
 - The interpreter currently uses the C++ call stack for recursion
 - Deep recursion (e.g. `range(1, 10000)`) will stack overflow
 - Options: trampoline in `call_callable`, or explicit continuation passing
@@ -233,7 +289,7 @@ SDL.destroy_window(win)
 - `set()` on an immutable binding should throw `RuntimeError`
 - Requires tracking mutability in `Environment` alongside the value
 
-### Output / stdio design (decide and implement)
+### Output / stdio design (decide and implement) (MUST LATER)
 
 Current `printf_s`/`printf_i` are problematic. Type already encoded in the name, format string adds no value. Three options to choose from:
 
@@ -241,7 +297,7 @@ Current `printf_s`/`printf_i` are problematic. Type already encoded in the name,
   2. **Better:** full varargs `printf(fmt, ...)` FFI support — useful when padding/alignment/precision matter
   3. **Current:** `printf_i("%d\n", n)` style — neither simple nor powerful. Fix this.
 
-### Localisation — three-layer architecture
+### Localisation — three-layer architecture (MUST SOONER)
 
 VO has no reserved words and symbol-only syntax, making it uniquely suited to full natural-language localisation. The goal is to separate three concerns cleanly:
 
@@ -276,7 +332,7 @@ VO has no reserved words and symbol-only syntax, making it uniquely suited to fu
 - Library options: mstch, kainjow/mustache, or std::format (C++20)
 
 
-### Visitor-style dispatch (refactor)
+### Visitor-style dispatch (refactor) (SHOULD LATER)
 - Replace `dynamic_cast` chains in `Interpreter::eval` / `Interpreter::exec` with a proper visitor pattern
 - Introduce AST visitor interfaces for expressions and statements
 - Add `accept(...)` methods to all AST node types

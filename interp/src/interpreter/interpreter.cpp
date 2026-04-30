@@ -382,7 +382,7 @@ ValuePtr Interpreter::eval_iter(const ast::IterExpr& e,
     if (fn.param_names.size() != 2)
         throw RuntimeError(">> callable must take exactly two parameters (key, value)");
     for (auto& [k, v] : obj->as_hash()->members) {
-        if (k == "()") continue;   // skip constructor slot
+        if (k == "()" || (!k.empty() && k[0] == '_')) continue;
         call_callable(fn, { Value::from(k), v }, nullptr);
     }
     return Value::nil();
@@ -437,11 +437,12 @@ ValuePtr Interpreter::call_value(ValuePtr callee,
         HashPtr tmpl     = callee->as_hash();
         HashPtr instance = tmpl->clone();
 
-        if (instance->has("()")) {
+        try {
             ValuePtr ctor = instance->get("()");
             if (ctor->is_callable())
                 call_callable(*ctor->as_callable(), args, Value::from(instance));
-        }
+        } catch (const std::runtime_error&) {}
+
         return Value::from(instance);
     }
 

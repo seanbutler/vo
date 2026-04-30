@@ -1,0 +1,94 @@
+@ "tests/color.vo"
+@ "lib/stdlib.vo"
+
+ok : int := 1
+
+// ----- struct: no constructor, methods via self -----
+
+Point = {
+    x : int = 0
+    y : int = 0
+    dot = (other) { self.x * other.x + self.y * other.y }
+}
+
+p = Point()
+p.x := 3
+p.y := 4
+q = Point()
+q.x := 1
+q.y := 2
+
+? p.x == 3        { } { ok := 0 }
+? p.dot(q) == 11  { } { ok := 0 }
+
+// two instances are independent
+p2 = Point()
+p2.x := 99
+? p.x == 3   { } { ok := 0 }
+? p2.x == 99 { } { ok := 0 }
+
+// ----- struct subtype: inherits method -----
+
+Point3 = subtype(Point, { z : int = 0 })
+
+r = Point3()
+r.x := 1
+r.y := 2
+r.z := 5
+
+? r.z == 5       { } { ok := 0 }
+? r.dot(q) == 5  { } { ok := 0 }   // dot inherited, uses self.x / self.y
+
+// ----- class: constructor + method -----
+
+Animal = {
+    sound : string = "..."
+    speak  = () { self.sound }
+    () = (s : string) { self.sound := s }
+}
+
+a = Animal("Grunt")
+? a.sound == "Grunt"   { } { ok := 0 }
+? a.speak() == "Grunt" { } { ok := 0 }
+? Animal.sound == "..." { } { ok := 0 }   // template slot unchanged
+
+// ----- subtype: inherits constructor through _ chain -----
+
+Dog = subtype(Animal, { sound : string = "Woof" })
+
+d = Dog("Rex")
+? d.sound == "Rex"    { } { ok := 0 }
+? d.speak() == "Rex"  { } { ok := 0 }
+? Dog.sound == "Woof" { } { ok := 0 }   // Dog template unchanged
+
+// two Dog instances are independent
+d2 = Dog("Buddy")
+? d2.sound == "Buddy" { } { ok := 0 }
+? d.sound  == "Rex"   { } { ok := 0 }
+
+// ----- subtype: method override -----
+
+Cat = subtype(Animal, {
+    sound : string = "Meow"
+    speak  = () { "cat:" + self.sound }
+})
+
+c = Cat("Whiskers")
+? c.sound == "Whiskers"       { } { ok := 0 }
+? c.speak() == "cat:Whiskers" { } { ok := 0 }
+
+// Animal speak unaffected by Cat override
+a2 = Animal("Moo")
+? a2.speak() == "Moo" { } { ok := 0 }
+
+// ----- multi-level: Poodle extends Dog extends Animal -----
+
+Poodle = subtype(Dog, { size : string = "small" })
+
+pp = Poodle("Fifi")
+? pp.sound == "Fifi"  { } { ok := 0 }   // constructor ran through two _ hops
+? pp.speak() == "Fifi" { } { ok := 0 }  // method inherited from Animal
+? pp.size == "small"  { } { ok := 0 }   // own slot
+
+oo_test_ok = ok
+report_test("oo", oo_test_ok)

@@ -83,6 +83,17 @@ map_values = (src, fn) {
     result
 }
 
+// ----- subtype -------------------------------------------------------------
+// Return a child hash that inherits from parent via _ delegation.
+// Slots in overrides shadow parent slots.  The () constructor is found
+// through the _ chain at call time — no explicit copying needed.
+
+subtype = (parent, overrides) {
+    child = merge(parent, overrides)
+    child._ := parent
+    child
+}
+
 // ----- almost_equal --------------------------------------------------------
 // Simple floating-point helper: absolute difference <= epsilon.
 

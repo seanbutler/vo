@@ -14,9 +14,11 @@ HashPtr HashInstance::clone() const {
 
 ValuePtr HashInstance::get(const std::string& name) const {
     auto it = members.find(name);
-    if (it == members.end())
-        throw std::runtime_error("Hash has no member '" + name + "'");
-    return it->second;
+    if (it != members.end()) return it->second;
+    auto proto = members.find("_");
+    if (proto != members.end() && proto->second->is_hash())
+        return proto->second->as_hash()->get(name);
+    throw std::runtime_error("Hash has no member '" + name + "'");
 }
 
 void HashInstance::set(const std::string& name, ValuePtr v) {
@@ -59,7 +61,7 @@ std::string Value::to_display_string() const {
         oss << "{ ";
         bool first = true;
         for (auto& [k, v] : as_hash()->members) {
-            if (k == "()") continue;    // skip constructor slot in display
+            if (k == "()" || (!k.empty() && k[0] == '_')) continue;
             if (!first) oss << ", ";
             oss << k << " = " << v->to_display_string();
             first = false;

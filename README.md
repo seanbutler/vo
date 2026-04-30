@@ -34,6 +34,24 @@ Node = {
 }
 node = Node(42, {})           // clones Node, calls ()
 
+// inheritance via _ delegation  (stdlib subtype helper)
+@ "lib/stdlib.vo"
+Animal = {
+    sound : string = "..."
+    speak  = () { self.sound }
+    () = (s : string) { self.sound := s }
+}
+Dog = subtype(Animal, { sound : string = "Woof" })
+d = Dog("Rex")                // constructor found through _ chain
+d.speak()                     // method inherited; self = d
+
+// private slots — _ prefix hides from >>, merge, clone, and display
+Counter = {
+    _count : int = 0
+    inc    = () { self._count := self._count + 1 }
+    value  = () { self._count }
+}
+
 // conditional expression (else branch optional, returns nil if absent)
 ? x > 0 { "positive" } { "non-positive" }
 ? x > 0 { "positive" }
@@ -58,7 +76,7 @@ node = Node(42, {})           // clones Node, calls ()
 point.x
 point.(key_expr)              // dynamic key
 
-// hash iteration
+// hash iteration  (skips _ prefixed and () slots)
 data >> (k, v) { printf_s("%s\n", k) }
 
 // import
@@ -77,7 +95,9 @@ puts = $$ spec
 - **Hash as universal primitive** — one data structure covers objects, modules, prototypes, and constructors
 - **Expression-oriented** — every construct produces a value; no `return` keyword
 - **First-class callables** — functions are values; closures capture their environment
-- **Prototype-based OOP** — calling a hash clones it and invokes its `()` constructor slot
+- **Prototype-based OOP** — calling a hash clones it and invokes its `()` constructor slot; `self` is bound in both constructors and methods
+- **Inheritance via `_` delegation** — the `_` slot chains member lookup to a parent hash at runtime; `subtype` in stdlib builds child hashes with one call
+- **Private slots** — any slot whose name begins with `_` is hidden from `>>`, `merge`, `clone`, and display; directly accessible by name
 - **Loop primitive** — `~{ }` is an infinite loop block; `\` escapes it (lexically scoped, parse-time enforced); `!` is logical NOT
 - **C FFI via `$$`** — bind and call C library functions directly
 - **No reserved words** — only symbols; `@` import, `?` conditional, `~{ }` loop, `\` break, `!` not, `>>` iteration, `$$` FFI
@@ -140,6 +160,68 @@ print_list = (list) {
 }
 
 print_list(sieve(range(2, 50)))
+```
+
+## Example — Prototype OOP with inheritance
+
+```
+@ "lib/stdio.vo"
+@ "lib/stdlib.vo"
+
+// base — constructor + method
+Animal = {
+    sound : string = "..."
+    speak  = () { printf_s("%s\n", self.sound) }
+    () = (s : string) { self.sound := s }
+}
+
+// subtype inherits constructor and speak through _ chain
+Dog = subtype(Animal, { sound : string = "Woof" })
+
+// subtype with method override
+Cat = subtype(Animal, {
+    sound : string = "Meow"
+    speak  = () { printf_s("Cat says: %s\n", self.sound) }
+})
+
+// multi-level inheritance
+Poodle = subtype(Dog, { size : string = "small" })
+
+a = Animal("Grunt")   a.speak()          // Grunt
+d = Dog("Rex")        d.speak()          // Rex
+c = Cat("Whiskers")   c.speak()          // Cat says: Whiskers
+p = Poodle("Fifi")    p.speak()          // Fifi  (constructor through two _ hops)
+```
+
+Structs — hashes with no `()` — inherit methods the same way:
+
+```
+Point = {
+    x : int = 0
+    y : int = 0
+    dot = (other) { self.x * other.x + self.y * other.y }
+}
+
+Point3 = subtype(Point, { z : int = 0 })
+
+p = Point3()
+p.x := 1  p.y := 2  p.z := 5
+printf_i("%d\n", p.dot(p))   // 5
+```
+
+Private state with `_` prefix — hidden from `>>`, `merge`, and `clone`:
+
+```
+Counter = {
+    _count : int = 0
+    inc    = () { self._count := self._count + 1 }
+    value  = () { self._count }
+}
+
+c = Counter()
+c.inc()  c.inc()  c.inc()
+printf_i("%d\n", c.value())   // 3
+// c._count accessible directly but invisible to iteration
 ```
 
 ## Example — Extending the language via hashes
@@ -206,6 +288,8 @@ Full source: `interp/alias.vo`
 | `interp/src/ast/` | AST node definitions |
 | `interp/src/interpreter/` | Tree-walking interpreter, FFI, environment |
 | `interp/lib/stdio.vo` | `printf_s` / `printf_i` bindings |
+| `interp/lib/stdlib.vo` | `clone`, `merge`, `subtype`, `without`, `has`, `size`, `rename`, `filter_map`, `map_values` |
+| `interp/lib/metalib.vo` | Module interface helpers — `pick`, `omit`, `remap`, `public_api`, `exports_only` |
 | `interp/lib/cstdio.vo` | C stdio descriptor library |
 | `interp/lib/cstdlib.vo` | C stdlib descriptor library |
 | `interp/lib/ffi.vo` | FFI helper (`bind_one`, `bind_lib`) |
