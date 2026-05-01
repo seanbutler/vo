@@ -568,6 +568,101 @@ ValuePtr Interpreter::bind_foreign_function(ValuePtr spec) {
             return Value::from(fn(require_double(args[0], "double"),
                                   require_double(args[1], "double")));
         };
+    } else if (param_types.empty() && return_type == "void") {
+        using Fn = void (*)();
+        Fn fn = reinterpret_cast<Fn>(raw_symbol);
+        native->invoke = [fn](const std::vector<ValuePtr>& args) {
+            require_arity(args, 0);
+            fn();
+            return Value::nil();
+        };
+    } else if (param_types.size() == 1 && param_types[0] == "int" && return_type == "void") {
+        using Fn = void (*)(int);
+        Fn fn = reinterpret_cast<Fn>(raw_symbol);
+        native->invoke = [fn](const std::vector<ValuePtr>& args) {
+            require_arity(args, 1);
+            fn(static_cast<int>(require_int(args[0], "int")));
+            return Value::nil();
+        };
+    } else if (param_types.size() == 2 && param_types[0] == "int" && param_types[1] == "int" && return_type == "void") {
+        using Fn = void (*)(int, int);
+        Fn fn = reinterpret_cast<Fn>(raw_symbol);
+        native->invoke = [fn](const std::vector<ValuePtr>& args) {
+            require_arity(args, 2);
+            fn(static_cast<int>(require_int(args[0], "int")),
+               static_cast<int>(require_int(args[1], "int")));
+            return Value::nil();
+        };
+    } else if (param_types.size() == 2 && param_types[0] == "int" && param_types[1] == "int" && return_type == "int") {
+        using Fn = int (*)(int, int);
+        Fn fn = reinterpret_cast<Fn>(raw_symbol);
+        native->invoke = [fn](const std::vector<ValuePtr>& args) {
+            require_arity(args, 2);
+            return Value::from(static_cast<int64_t>(
+                fn(static_cast<int>(require_int(args[0], "int")),
+                   static_cast<int>(require_int(args[1], "int")))));
+        };
+    } else if (param_types.size() == 3 && param_types[0] == "char" && param_types[1] == "int" && param_types[2] == "int" && return_type == "void") {
+        using Fn = void (*)(char, int, int);
+        Fn fn = reinterpret_cast<Fn>(raw_symbol);
+        native->invoke = [fn](const std::vector<ValuePtr>& args) {
+            require_arity(args, 3);
+            fn(static_cast<char>(require_int(args[0], "char")),
+               static_cast<int>(require_int(args[1], "int")),
+               static_cast<int>(require_int(args[2], "int")));
+            return Value::nil();
+        };
+    } else if (param_types.size() == 5 && param_types[0] == "int" && param_types[1] == "int" && param_types[2] == "char" && param_types[3] == "int" && param_types[4] == "int" && return_type == "void") {
+        using Fn = void (*)(int, int, char, int, int);
+        Fn fn = reinterpret_cast<Fn>(raw_symbol);
+        native->invoke = [fn](const std::vector<ValuePtr>& args) {
+            require_arity(args, 5);
+            fn(static_cast<int>(require_int(args[0], "int")),
+               static_cast<int>(require_int(args[1], "int")),
+               static_cast<char>(require_int(args[2], "char")),
+               static_cast<int>(require_int(args[3], "int")),
+               static_cast<int>(require_int(args[4], "int")));
+            return Value::nil();
+        };
+    } else if (param_types.size() == 6 && param_types[0] == "int" && param_types[1] == "int" && param_types[2] == "int" && param_types[3] == "char" && param_types[4] == "int" && param_types[5] == "int" && return_type == "void") {
+        using Fn = void (*)(int, int, int, char, int, int);
+        Fn fn = reinterpret_cast<Fn>(raw_symbol);
+        native->invoke = [fn](const std::vector<ValuePtr>& args) {
+            require_arity(args, 6);
+            fn(static_cast<int>(require_int(args[0], "int")),
+               static_cast<int>(require_int(args[1], "int")),
+               static_cast<int>(require_int(args[2], "int")),
+               static_cast<char>(require_int(args[3], "char")),
+               static_cast<int>(require_int(args[4], "int")),
+               static_cast<int>(require_int(args[5], "int")));
+            return Value::nil();
+        };
+    } else if (param_types.size() == 5 && param_types[0] == "int" && param_types[1] == "int" && param_types[2] == "cstring" && param_types[3] == "int" && param_types[4] == "int" && return_type == "void") {
+        using Fn = void (*)(int, int, const char*, int, int);
+        Fn fn = reinterpret_cast<Fn>(raw_symbol);
+        native->invoke = [fn](const std::vector<ValuePtr>& args) {
+            require_arity(args, 5);
+            fn(static_cast<int>(require_int(args[0], "int")),
+               static_cast<int>(require_int(args[1], "int")),
+               require_cstring(args[2]),
+               static_cast<int>(require_int(args[3], "int")),
+               static_cast<int>(require_int(args[4], "int")));
+            return Value::nil();
+        };
+    } else if (param_types.size() == 7 && param_types[0] == "int" && param_types[1] == "int" && param_types[2] == "int" && param_types[3] == "int" && param_types[4] == "char" && param_types[5] == "int" && param_types[6] == "int" && return_type == "void") {
+        using Fn = void (*)(int, int, int, int, char, int, int);
+        Fn fn = reinterpret_cast<Fn>(raw_symbol);
+        native->invoke = [fn](const std::vector<ValuePtr>& args) {
+            require_arity(args, 7);
+            fn(static_cast<int>(require_int(args[0], "int")),
+               static_cast<int>(require_int(args[1], "int")),
+               static_cast<int>(require_int(args[2], "int")),
+               static_cast<int>(require_int(args[3], "int")),
+               static_cast<char>(require_int(args[4], "char")),
+               static_cast<int>(require_int(args[5], "int")),
+               static_cast<int>(require_int(args[6], "int")));
+            return Value::nil();
+        };
     } else {
         throw RuntimeError("Unsupported foreign signature for symbol '" + symbol + "'");
     }

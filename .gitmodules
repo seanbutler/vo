@@ -1,0 +1,3 @@
+[submodule "interp/vendor/vtkit"]
+	path = interp/vendor/vtkit
+	url = https://github.com/seanbutler/vtkit

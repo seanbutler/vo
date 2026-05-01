@@ -17,4 +17,10 @@ add_executable(vo
 target_include_directories(vo PRIVATE src)
 target_compile_options(vo PRIVATE -Wall -Wextra -Wpedantic)
 target_link_libraries(vo PRIVATE dl)
+set_target_properties(vo PROPERTIES BUILD_RPATH "$ORIGIN")
+
+set(VTK_BUILD_EXAMPLE OFF CACHE BOOL "" FORCE)
+set(VTK_BUILD_STATIC  OFF CACHE BOOL "" FORCE)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+add_subdirectory(vendor/vtkit)
 

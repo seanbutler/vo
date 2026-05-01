@@ -1,0 +1,60 @@
+@ "lib/ffi.vo"
+
+vtkit = {
+    lib : string = "libvtkit.so"
+    abi : string = "c"
+
+    functions = {
+        clear        = { symbol : string = "vtk_clear"        returns : string = "void" }
+        goto         = { symbol : string = "vtk_goto"         params = { p1 : string = "int"  p2 : string = "int" }  returns : string = "void" }
+        color        = { symbol : string = "vtk_color"        params = { p1 : string = "int" }  returns : string = "void" }
+        bg           = { symbol : string = "vtk_bg"           params = { p1 : string = "int" }  returns : string = "void" }
+        reset        = { symbol : string = "vtk_reset"        returns : string = "void" }
+        hide_cursor  = { symbol : string = "vtk_hide_cursor"  returns : string = "void" }
+        show_cursor  = { symbol : string = "vtk_show_cursor"  returns : string = "void" }
+
+        raw_mode     = { symbol : string = "vtk_raw_mode"     returns : string = "int" }
+        restore_mode = { symbol : string = "vtk_restore_mode" returns : string = "int" }
+        getch        = { symbol : string = "vtk_getch"        returns : string = "int" }
+
+        get_width    = { symbol : string = "vtk_get_width"    returns : string = "int" }
+        get_height   = { symbol : string = "vtk_get_height"   returns : string = "int" }
+
+        watch_resize  = { symbol : string = "vtk_watch_resize"  params = { p1 : string = "int" }  returns : string = "void" }
+        handle_resize = { symbol : string = "vtk_handle_resize" returns : string = "int" }
+
+        begin = { symbol : string = "vtk_begin" returns : string = "void" }
+        end   = { symbol : string = "vtk_end"   returns : string = "void" }
+
+        buffer_init    = { symbol : string = "vtk_buffer_init"    params = { p1 : string = "int"  p2 : string = "int" }  returns : string = "int" }
+        buffer_free    = { symbol : string = "vtk_buffer_free"    returns : string = "void" }
+        buffer_clear   = { symbol : string = "vtk_buffer_clear"   params = { p1 : string = "char"  p2 : string = "int"  p3 : string = "int" }  returns : string = "void" }
+        buffer_put     = { symbol : string = "vtk_buffer_put"     params = { p1 : string = "int"  p2 : string = "int"  p3 : string = "char"  p4 : string = "int"  p5 : string = "int" }  returns : string = "void" }
+        buffer_present = { symbol : string = "vtk_buffer_present" returns : string = "void" }
+
+        buffer_hline = { symbol : string = "vtk_buffer_hline" params = { p1 : string = "int"  p2 : string = "int"  p3 : string = "int"  p4 : string = "char"  p5 : string = "int"  p6 : string = "int" }  returns : string = "void" }
+        buffer_vline = { symbol : string = "vtk_buffer_vline" params = { p1 : string = "int"  p2 : string = "int"  p3 : string = "int"  p4 : string = "char"  p5 : string = "int"  p6 : string = "int" }  returns : string = "void" }
+        buffer_text  = { symbol : string = "vtk_buffer_text"  params = { p1 : string = "int"  p2 : string = "int"  p3 : string = "cstring"  p4 : string = "int"  p5 : string = "int" }  returns : string = "void" }
+        buffer_rect  = { symbol : string = "vtk_buffer_rect"  params = { p1 : string = "int"  p2 : string = "int"  p3 : string = "int"  p4 : string = "int"  p5 : string = "char"  p6 : string = "int"  p7 : string = "int" }  returns : string = "void" }
+        buffer_line  = { symbol : string = "vtk_buffer_line"  params = { p1 : string = "int"  p2 : string = "int"  p3 : string = "int"  p4 : string = "int"  p5 : string = "char"  p6 : string = "int"  p7 : string = "int" }  returns : string = "void" }
+    }
+}
+
+vtk = bind_lib(vtkit)
+
+vtk.BLACK          := 0
+vtk.RED            := 1
+vtk.GREEN          := 2
+vtk.YELLOW         := 3
+vtk.BLUE           := 4
+vtk.MAGENTA        := 5
+vtk.CYAN           := 6
+vtk.WHITE          := 7
+vtk.BRIGHT_BLACK   := 8
+vtk.BRIGHT_RED     := 9
+vtk.BRIGHT_GREEN   := 10
+vtk.BRIGHT_YELLOW  := 11
+vtk.BRIGHT_BLUE    := 12
+vtk.BRIGHT_MAGENTA := 13
+vtk.BRIGHT_CYAN    := 14
+vtk.BRIGHT_WHITE   := 15

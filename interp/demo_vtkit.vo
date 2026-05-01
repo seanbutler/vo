@@ -1,0 +1,90 @@
+@ "lib/vtkit.vo"
+
+W : int = 80
+H : int = 24
+horizon : int = 16
+
+usleep = $$ { lib : string = "libc.so.6"  abi : string = "c"  symbol : string = "usleep"  params = { p1 : string = "uint" }  returns : string = "void" }
+
+// cloud x positions
+x_tiny   : int := 62
+x_small  : int := 20
+x_large  : int := 45
+x_medium : int := 5
+
+// per-cloud tick counters for speed control
+t_tiny   : int := 0
+t_small  : int := 0
+t_medium : int := 0
+
+// sun: starts east (left), arcs to west (right)
+sun_x : int := 0
+t_sun : int := 0
+
+vtk.begin()
+vtk.buffer_init(W, H)
+vtk.raw_mode()
+
+~{
+    ? vtk.getch() == 113 { \ }
+
+    // large: every frame (nearest, fastest)
+    x_large := x_large - 1
+    ? x_large < -12 { x_large := W }
+
+    // medium: every 3 frames
+    t_medium := t_medium + 1
+    ? t_medium >= 3 { x_medium := x_medium - 1  t_medium := 0 }
+    ? x_medium < -6 { x_medium := W }
+
+    // small: every 5 frames
+    t_small := t_small + 1
+    ? t_small >= 5 { x_small := x_small - 1  t_small := 0 }
+    ? x_small < -6 { x_small := W }
+
+    // tiny: every 8 frames (furthest, slowest)
+    t_tiny := t_tiny + 1
+    ? t_tiny >= 8 { x_tiny := x_tiny - 1  t_tiny := 0 }
+    ? x_tiny < -4 { x_tiny := W }
+
+    // sun: every 12 frames (slowest — furthest away)
+    t_sun := t_sun + 1
+    ? t_sun >= 12 { sun_x := sun_x + 1  t_sun := 0 }
+    ? sun_x >= W  { sun_x := 0 }
+
+    // arc height: parabolic approx of sin(pi*x/W)
+    // sun_y = (horizon-2) - arc * 4*x*(W-x) / (W*W)
+    // arc=13 so sun peaks at y=1 at midday, sits at y=13 at dawn/dusk
+    sun_y : int = (horizon - 2) - 13 * 4 * sun_x * (W - sun_x) / (W * W)
+
+    vtk.buffer_rect(0, 0,       W, horizon,     32, vtk.WHITE, vtk.BLUE)
+    vtk.buffer_rect(0, horizon, W, H - horizon, 32, vtk.WHITE, vtk.GREEN)
+
+    // sun (drawn before clouds so clouds pass in front)
+    vtk.buffer_text(sun_x, sun_y - 1, "  X  ",  vtk.RED, vtk.YELLOW)
+    vtk.buffer_text(sun_x, sun_y,     " XXX ",  vtk.RED, vtk.YELLOW)
+    vtk.buffer_text(sun_x, sun_y + 1, "  X  ",  vtk.RED, vtk.YELLOW)
+
+    // tiny cloud (2 wide, y=2)
+    ? x_tiny >= 0 { vtk.buffer_text(x_tiny, 2, "~~",   vtk.WHITE, vtk.WHITE) }
+    ? x_tiny >= 0 { vtk.buffer_text(x_tiny, 3, "~~~~", vtk.WHITE, vtk.WHITE) }
+
+    // small cloud (6 wide, y=11)
+    ? x_small >= 0 { vtk.buffer_text(x_small, 11, "~~~~",   vtk.WHITE, vtk.WHITE) }
+    ? x_small >= 0 { vtk.buffer_text(x_small, 12, "~~~~~~", vtk.WHITE, vtk.WHITE) }
+
+    // medium cloud (4 wide, y=7)
+    ? x_medium >= 0 { vtk.buffer_text(x_medium, 7, "~~~",   vtk.WHITE, vtk.WHITE) }
+    ? x_medium >= 0 { vtk.buffer_text(x_medium, 8, "~~~~~", vtk.WHITE, vtk.WHITE) }
+
+    // large cloud (11 wide, y=4, 3 rows tall)
+    ? x_large >= 0 { vtk.buffer_text(x_large, 4, "~~~~~~~",     vtk.WHITE, vtk.WHITE) }
+    ? x_large >= 0 { vtk.buffer_text(x_large, 5, "~~~~~~~~~",   vtk.WHITE, vtk.WHITE) }
+    ? x_large >= 0 { vtk.buffer_text(x_large, 6, "~~~~~~~~~~~", vtk.BLACK, vtk.WHITE) }
+
+    vtk.buffer_present()
+    usleep(50000)
+}
+
+vtk.restore_mode()
+vtk.end()
