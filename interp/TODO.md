@@ -70,6 +70,11 @@ p.speak()             // method inherited from Animal
 
 
 ## PENDING
+ 
+### AST Visualisation (COULD, LATER, LOW, LIMITED)
+- flag driven AST output via dot/graphviz 
+- key driven and/or on each src file load 
+
 
 ### Interpreter / Execution (COULD, LATER, HIGH, LIMITED)
 - Shorten Overall Code Length - Seems Excessive for a Small Language
@@ -89,6 +94,8 @@ p.speak()             // method inherited from Animal
 - Simplest implementation: one line in `lib/stdlib.vo` — `null = {}`
 - No language changes required; `null` is just an identifier bound to the empty hash
 - FFI pointer dispatcher should treat empty hash as `NULL` (i.e. `nullptr`) — relevant for SDL3 and any C library that takes optional pointer arguments
+
+
 
 ### Bare block `{ }` as zero-arg callable - (COULD, LATER, LOW, LIMITED)
 - A syntax change that potentially breaks backward compatability

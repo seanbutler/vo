@@ -23,7 +23,7 @@ using HashPtr     = std::shared_ptr<HashInstance>;
 using CallablePtr = std::shared_ptr<Callable>;
 using NativeCallablePtr = std::shared_ptr<NativeCallable>;
 
-// ── HashInstance ──────────────────────────────────────────────────────────────
+// --- HashInstance ---------------------------------------------------------------------
 //
 //  Both a live object and a "type template" — calling a hash clones it and
 //  invokes the "()" member (constructor) if one is present.
@@ -37,7 +37,7 @@ struct HashInstance {
     bool     has(const std::string& name)              const;
 };
 
-// ── Callable ──────────────────────────────────────────────────────────────────
+// --- Callable ------------------------------------------------------------------------
 //
 //  A first-class function value.  Carries its body AST and the lexical
 //  environment it was defined in (closure).
@@ -54,7 +54,7 @@ struct NativeCallable {
     std::function<ValuePtr(const std::vector<ValuePtr>&)> invoke;
 };
 
-// ── Value ─────────────────────────────────────────────────────────────────────
+// --- Value ----------------------------------------------------------------------
 
 struct Value {
     enum class Kind { Nil, Integer, Double, String, Hash, Callable, NativeCallable };
@@ -101,7 +101,8 @@ struct Value {
 
     std::string to_display_string() const;
 
-    // ── factory helpers ───────────────────────────────────────────────────────
+    // --- factory helpers ---------------------------------------------------------
+    
     static ValuePtr nil()                  { return std::make_shared<Value>(); }
     static ValuePtr from(int64_t v)        { return std::make_shared<Value>(v); }
     static ValuePtr from(double v)         { return std::make_shared<Value>(v); }
