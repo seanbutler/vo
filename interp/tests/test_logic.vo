@@ -3,36 +3,60 @@
 
 ok : int := 1
 
-// not: falsy input
+// not
 ? logic.not(0) == 1 { } { ok := 0 }
-
-// not: truthy input
 ? logic.not(1) == 0 { } { ok := 0 }
-
-// not: non-zero is truthy
 ? logic.not(42) == 0 { } { ok := 0 }
 
-// and: both true
-? logic.and(() { 1 }, () { 1 }) == 1 { } { ok := 0 }
+// and
+? logic.and(0, 0) == 0 { } { ok := 0 }
+? logic.and(0, 1) == 0 { } { ok := 0 }
+? logic.and(1, 0) == 0 { } { ok := 0 }
+? logic.and(1, 1) == 1 { } { ok := 0 }
 
-// and: first false — short-circuit, second not called
-second_called : int := 0
-logic.and(() { 0 }, () { second_called := 1  1 })
-? second_called == 0 { } { ok := 0 }
+// or
+? logic.or(0, 0) == 0 { } { ok := 0 }
+? logic.or(0, 1) == 1 { } { ok := 0 }
+? logic.or(1, 0) == 1 { } { ok := 0 }
+? logic.or(1, 1) == 1 { } { ok := 0 }
 
-// and: first true, second false
-? logic.and(() { 1 }, () { 0 }) == 0 { } { ok := 0 }
+// xor
+? logic.xor(0, 0) == 0 { } { ok := 0 }
+? logic.xor(0, 1) == 1 { } { ok := 0 }
+? logic.xor(1, 0) == 1 { } { ok := 0 }
+? logic.xor(1, 1) == 0 { } { ok := 0 }
 
-// or: first true — short-circuit, second not called
-or_second_called : int := 0
-logic.or(() { 1 }, () { or_second_called := 1  0 })
-? or_second_called == 0 { } { ok := 0 }
+// nand
+? logic.nand(0, 0) == 1 { } { ok := 0 }
+? logic.nand(0, 1) == 1 { } { ok := 0 }
+? logic.nand(1, 0) == 1 { } { ok := 0 }
+? logic.nand(1, 1) == 0 { } { ok := 0 }
 
-// or: first false, second true
-? logic.or(() { 0 }, () { 1 }) == 1 { } { ok := 0 }
+// nor
+? logic.nor(0, 0) == 1 { } { ok := 0 }
+? logic.nor(0, 1) == 0 { } { ok := 0 }
+? logic.nor(1, 0) == 0 { } { ok := 0 }
+? logic.nor(1, 1) == 0 { } { ok := 0 }
 
-// or: both false
-? logic.or(() { 0 }, () { 0 }) == 0 { } { ok := 0 }
+// xnor
+? logic.xnor(0, 0) == 1 { } { ok := 0 }
+? logic.xnor(0, 1) == 0 { } { ok := 0 }
+? logic.xnor(1, 0) == 0 { } { ok := 0 }
+? logic.xnor(1, 1) == 1 { } { ok := 0 }
+
+// derived: de morgan — not(and(a,b)) == or(not(a),not(b))
+? logic.nand(1, 0) == logic.or(logic.not(1), logic.not(0)) { } { ok := 0 }
+? logic.nand(1, 1) == logic.or(logic.not(1), logic.not(1)) { } { ok := 0 }
+
+// derived: xor from nand chain — xor(a,b) == nand(nand(a,nand(a,b)),nand(b,nand(a,b)))
+xor_from_nand = (a : int, b : int) {
+    n  : int = logic.nand(a, b)
+    logic.nand(logic.nand(a, n), logic.nand(b, n))
+}
+? xor_from_nand(0, 0) == logic.xor(0, 0) { } { ok := 0 }
+? xor_from_nand(0, 1) == logic.xor(0, 1) { } { ok := 0 }
+? xor_from_nand(1, 0) == logic.xor(1, 0) { } { ok := 0 }
+? xor_from_nand(1, 1) == logic.xor(1, 1) { } { ok := 0 }
 
 logic_test_ok = ok
 report_test("logic", logic_test_ok)
