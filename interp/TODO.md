@@ -1,5 +1,6 @@
 # TODO
 
+
 ## Note: How to read this TODO...
 
 Each todo item has a parenthesis in its title with the following form:
@@ -19,18 +20,105 @@ This gives us a shorthand to record opinions about this feature useful in orderi
 - **benefit:** are the outcomes extensive from this todo item? either its a big feature, or popular feature or maybe almost nobody will use it
 
 
-### Interpreter / Execution 
+## PENDING
+
+### Code Size & Complexity (COULD, LATER, MEDIUM, SMALL) [PENDING]
 - Shorten Overall Code Length - Seems Excessive for a Small Language
 
 
-### Execution Efficiency
+### Execution Efficiency (COULD, LATER, MEDIUM, LARGE) [PENDING]
  - Execution Speed Benchmark Framework
  - Execution Memory Metrics Report
- - AST Visualisation
  - Memory Visualisation
- 
 
-### Loop syntax — DONE
+### Profiling Report (COULD, SOONER, MEDIUM, LARGE) [PENDING]
+
+Goal: when `--profile` is passed, collect per-function timing and memory data and print a report on exit.
+
+**Trigger**
+- `--profile` flag on the `vo` binary; no effect on execution behaviour
+
+**Metrics — per function**
+- Call count
+- Total wall time (inclusive — includes callees)
+- Self wall time (exclusive — excludes callees)
+- Peak memory allocated during the call (bytes)
+
+**Metrics — totals**
+- Total program wall time
+- Total calls
+- Peak memory across whole run
+
+**Step 1 — timer and allocator hooks (interpreter.cpp)**
+- Wrap `call_callable` with `std::chrono::steady_clock` timestamps
+- Track a call stack depth counter to compute self-time (subtract child time from parent)
+- Hook `Value` / `HashInstance` construction/destruction to count live allocations
+
+**Step 2 — profile accumulator (`src/profiler.hpp/.cpp`)**
+- Map from function name → `{call_count, total_ns, self_ns, peak_bytes}`
+- Thread-safe if concurrency is ever added; for now a plain `std::unordered_map`
+- Active only when `--profile` flag is set — zero overhead otherwise
+
+**Step 3 — report printer**
+- On program exit, sort entries by self time descending
+- Print a table to stdout:
+```
+PROFILE REPORT
+──────────────────────────────────────────────────────
+ Function          Calls   Total ms   Self ms   Peak KB
+──────────────────────────────────────────────────────
+ loops.for          1200     48.2ms    12.1ms      4 KB
+ draw_scene          600     36.1ms    36.1ms      2 KB
+ ...
+──────────────────────────────────────────────────────
+ TOTAL                        48.2ms              8 KB
+```
+
+**Result — usage:**
+```
+./vo --profile mygame.vo
+```
+
+### AST Visualisation via Graphviz (COULD, SOONER, MEDIUM, LARGE) [PENDING]
+
+Goal: render the parsed AST as a Graphviz `.dot` graph, one per source file and one combined graph for the whole program including imports.
+
+**Trigger**
+- `--ast` flag passed to the `vo` binary — dumps AST after parse, before execution
+- Automatic on each `@` import when `--ast` is active
+
+**Output**
+- Per-file: `<source_stem>.dot` (e.g. `main.vo` → `main.dot`)
+- Combined: `program.dot` — all files merged into one digraph, subgraphs per file
+
+**Step 1 — `--ast` flag (main.cpp)**
+- Parse argv for `--ast` before running; pass a bool into `Interpreter` or a new `AstPrinter`
+- Strip the flag from the file argument list so the interpreter still runs normally
+
+**Step 2 — Graphviz emitter (`src/ast/dot_emitter.hpp/.cpp`)**
+- Visitor over the AST (expressions + statements)
+- Each node becomes a Graphviz node with a unique ID (e.g. pointer address or counter)
+- Label: node type + key field (literal value, operator, identifier name)
+- Edges: parent → child for each child slot
+- Output: valid `.dot` file, one `digraph` per file, `subgraph cluster_<file>` in combined output
+
+**Step 3 — Per-file emit on `@` import (interpreter.cpp)**
+- After parsing an imported file, if `--ast` active, call the emitter and write `<stem>.dot`
+- Append the file's nodes/edges into the combined graph accumulator
+
+**Step 4 — Combined graph flush (main.cpp)**
+- After the full program has loaded (all imports resolved), write `program.dot`
+
+**Result — usage:**
+```
+./vo --ast mygame.vo
+# produces: mygame.dot, stdlib.dot, vtkit.dot, ... program.dot
+dot -Tpng program.dot -o program.png && xdg-open program.png
+```
+ 
+## DONE
+
+### Loop syntax [DONE]
 - `~{ body }` — infinite loop block; repeats until `\` is executed
 - `\` — break/escape; lexically scoped to enclosing `~{ }`, parse-time enforced
 - `!` — logical NOT (prefix unary); `!x`, `!!(x)` etc.
@@ -43,7 +131,7 @@ This gives us a shorthand to record opinions about this feature useful in orderi
 ~{ body }                    // infinite
 ```
 
-### OOP — inheritance and private slots — DONE
+### OOP — inheritance and private slots [DONE]
 
 **`_` delegation (interpreter)**
 - `HashInstance::get` walks the `_` slot as a prototype chain before throwing
@@ -75,16 +163,14 @@ p.speak()             // method inherited from Animal
 ```
 
 
-
-
-### null alias for `{}`  (COULD, SOONER, SMALL, SMALL)
+### null alias for `{}`  (COULD, SOONER, SMALL, SMALL) [DONE]
 - `{}` is already the language's null/empty sentinel — used wherever "nothing" is needed
 - Add a stdlib binding so users can write `null` instead of `{}`
 - Simplest implementation: one line in `lib/stdlib.vo` — `null = {}`
 - No language changes required; `null` is just an identifier bound to the empty hash
 - FFI pointer dispatcher should treat empty hash as `NULL` (i.e. `nullptr`) — relevant for SDL3 and any C library that takes optional pointer arguments
 
-### Bare block `{ }` as zero-arg callable (COULD, LATER, SMALL, SMALL)
+### Bare block `{ }` as zero-arg callable (COULD, LATER, SMALL, SMALL) [DONE] 
 - A syntax change that potentially breaks backward compatability
 - A `{ body }` in expression position with no leading param list is sugar for `() { body }`
 - Makes `func_name = { code }` a callable, invoked as `func_name()`
@@ -92,7 +178,7 @@ p.speak()             // method inherited from Animal
 
 
 
-### Terminal graphics via ANSI escape codes (COULD, SOONER, SMALL, LARGE)
+### Terminal graphics via ANSI escape codes (COULD, SOONER, SMALL, LARGE) [DONE]
 
 Goal: cursor-addressed terminal output and non-blocking keyboard input — enough for snake, roguelikes, text UI. No curses/ncurses dependency.
 
@@ -139,7 +225,7 @@ term.show_cursor()
 term.restore_mode()
 ```
 
-### `lib/term.vo` — XY and colour interface
+### `lib/term.vo` — XY and colour interface [DONE]
 
 VO-side API exposed by `term` hash once the shim is built:
 
@@ -187,7 +273,7 @@ fill_box = (x : int, y : int, w : int, h : int, col : int, ch : string) {
 }
 ```
 
-### SDL3 binding via C shim
+### SDL3 binding via C shim (MUST, SOONER, LOW, HIGH) [PENDING]
 
 Goal: open a window, run a game loop, draw, handle input — all from VO with no struct exposure.
 
@@ -271,25 +357,28 @@ SDL.destroy_window(win)
 - Audio (`SDL_audio`)
 
 
-### Lazy boolean operators `&` and `|` (MUST SOONER)
+### Lazy boolean operators `&` and `|` (MUST SOONER SMALL BROAD) [PENDING]
+
 - Add `&` (logical AND) and `|` (logical OR) as proper infix operators
 - `a & b` desugars to `? a { b } { 0 }` — short-circuits, no call-frame overhead
 - `a | b` desugars to `? a { 1 } { b }` — short-circuits
 - Precedence: `|` below `&`, both below `!`, above comparison
 - Replaces the `logic.and` / `logic.or` callable workaround for hot paths
 
-### Tail-call optimisation (TCO) (COULD  LATER)
+### Tail-call optimisation (COULD  LATER ) [PENDING]
+
 - The interpreter currently uses the C++ call stack for recursion
 - Deep recursion (e.g. `range(1, 10000)`) will stack overflow
 - Options: trampoline in `call_callable`, or explicit continuation passing
 - Intentionally deferred — only needed if large recursion depths become a use case
 
-### Enforce immutability at runtime (MUST LATER)
+### Enforce immutability at runtime (MUST LATER) [PENDING]
+
 - `DeclStmt` already carries `is_mutable` flag but the interpreter does not enforce it
 - `set()` on an immutable binding should throw `RuntimeError`
 - Requires tracking mutability in `Environment` alongside the value
 
-### Output / stdio design (decide and implement) (MUST LATER)
+### Output / stdio design (MUST LATER) [PENDING]
 
 Current `printf_s`/`printf_i` are problematic. Type already encoded in the name, format string adds no value. Three options to choose from:
 
@@ -297,7 +386,9 @@ Current `printf_s`/`printf_i` are problematic. Type already encoded in the name,
   2. **Better:** full varargs `printf(fmt, ...)` FFI support — useful when padding/alignment/precision matter
   3. **Current:** `printf_i("%d\n", n)` style — neither simple nor powerful. Fix this.
 
-### Localisation — three-layer architecture (MUST SOONER)
+
+
+### Localisation — three-layer architecture (MUST SOONER)  [PENDING]
 
 VO has no reserved words and symbol-only syntax, making it uniquely suited to full natural-language localisation. The goal is to separate three concerns cleanly:
 
@@ -332,7 +423,8 @@ VO has no reserved words and symbol-only syntax, making it uniquely suited to fu
 - Library options: mstch, kainjow/mustache, or std::format (C++20)
 
 
-### Visitor-style dispatch (refactor) (SHOULD LATER)
+### Visitor-style dispatch refactoring (SHOULD LATER) [PENDING]
+
 - Replace `dynamic_cast` chains in `Interpreter::eval` / `Interpreter::exec` with a proper visitor pattern
 - Introduce AST visitor interfaces for expressions and statements
 - Add `accept(...)` methods to all AST node types
