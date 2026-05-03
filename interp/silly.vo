@@ -1,0 +1,66 @@
+// silly little program
+
+@ "lib/cstdlib.vo"
+@ "lib/vtkit.vo"
+
+W : int = 100
+H : int = 32
+
+W : int = vtk.get_width()
+H : int = vtk.get_height()
+
+horizon : int := H/2
+
+vtk.begin()
+vtk.buffer_init(W, H)
+vtk.raw_mode()
+
+x : int = cstd.rand() % 8
+y : int = 3 + cstd.rand() % 8
+
+sun_x : int = W - 20
+sun_y : int = 3
+
+
+meta_test = () {
+	greater_than_plus_ten(x, W)
+}
+
+
+greater_than_plus_ten = (a:int, b:int) {
+	a>b+10
+}
+
+~{
+			cstd.usleep(1000000/30)
+
+	? vtk.getch() == 113 { \ }
+
+
+
+    vtk.buffer_rect(0, 0, W, horizon, 32, vtk.WHITE, vtk.BLUE)
+    vtk.buffer_rect(0, horizon, W, H - horizon, 32, vtk.WHITE, vtk.GREEN)
+
+	// sun (drawn before clouds so clouds pass in front)
+	vtk.buffer_text(sun_x+2, sun_y - 1,  "    ",  vtk.RED, vtk.YELLOW)
+	vtk.buffer_text(sun_x, sun_y,      "        ",  vtk.RED, vtk.YELLOW)
+	vtk.buffer_text(sun_x+2, sun_y + 1,  "    ",  vtk.RED, vtk.YELLOW)
+
+	x = x + 1
+
+//	? greater_than_plus_ten(x, W) {
+	? meta_test() {
+		x := -10
+		y := 3 + cstd.rand() % 8
+	}
+
+	vtk.buffer_text(x+2, y,   "(   )", vtk.BLUE, vtk.WHITE)
+	vtk.buffer_text(x+1, y+1, "(      )", vtk.BLUE, vtk.WHITE)
+	vtk.buffer_text(x, y+2, "(        )", vtk.BLUE, vtk.WHITE)
+
+	vtk.buffer_present()
+
+}
+
+vtk.restore_mode()
+vtk.end()

@@ -28,7 +28,14 @@ vtkit = {
 
         buffer_init    = { symbol : string = "vtk_buffer_init"    params = { p1 : string = "int"  p2 : string = "int" }  returns : string = "int" }
         buffer_free    = { symbol : string = "vtk_buffer_free"    returns : string = "void" }
-        buffer_clear   = { symbol : string = "vtk_buffer_clear"   params = { p1 : string = "char"  p2 : string = "int"  p3 : string = "int" }  returns : string = "void" }
+        
+        buffer_clear   = { 
+            symbol : string = "vtk_buffer_clear"   
+            params = { p1 : string = "char"  p2 : string = "int"  p3 : string = "int" }  
+            returns : string = "void" 
+        }
+
+
         buffer_put     = { symbol : string = "vtk_buffer_put"     params = { p1 : string = "int"  p2 : string = "int"  p3 : string = "char"  p4 : string = "int"  p5 : string = "int" }  returns : string = "void" }
         buffer_present = { symbol : string = "vtk_buffer_present" returns : string = "void" }
 

@@ -1,6 +1,8 @@
+
+
 // C stdlib practical starter set (12 functions)
-// Descriptor-only metadata for future FFI binding/codegen.
-// Usage idea: @ "lib/cstdlib.vo"
+
+@ "lib/ffi.vo"
 
 cstdlib = {
     lib : string = "libc.so.6"
@@ -91,5 +93,18 @@ cstdlib = {
             returns : string = "void"
             header : string = "stdlib.h"
         }
+        
+        usleep = { 
+            symbol : string = "usleep"  
+            params = { p1 : string = "uint" }  
+            returns : string = "void" 
+        }
+
     }
 }
+
+
+
+cstd = bind_lib(cstdlib)
+
+

@@ -125,7 +125,8 @@ SDL.destroy_window(win)
 - Precedence: `|` below `&`, both below `!`, above comparison
 
 
-### User-defined infix call syntax (COULD, SOONER, SMALL, BROAD)
+### User-defined infix call syntax 
+- (COULD, SOONER, SMALL, BROAD)
 - PENDING
 
 Allow any two-argument callable to be called in infix position using backtick syntax.
@@ -158,10 +159,13 @@ x `dot` y `add` z  // left-associative: add(dot(x, y), z)
 - Consume it, parse next primary, emit `CallExpr`
 
 
-### Localisation — three-layer architecture (MUST, SOONER)
+### Localisation — three-layer architecture 
+- (MUST, SOONER, HIGH, BROAD)
 - PENDING
 
-VO has no reserved words and symbol-only syntax, making it uniquely suited to full natural-language localisation. The goal is to separate three concerns cleanly:
+VO has no reserved words and symbol-only syntax, making it uniquely suited to full natural-language localisation. Though its not just localisation its also a general customisation tech and perhaps also a way to program and build abstractions.
+
+The goal is to separate three concerns cleanly:
 
 ```
 1. Source (community symbols) → symbol table → canonical AST
@@ -194,7 +198,8 @@ VO has no reserved words and symbol-only syntax, making it uniquely suited to fu
 - Library options: mstch, kainjow/mustache, or std::format (C++20)
 
 
-### Enforce immutability at runtime (MUST, LATER)
+### Enforce immutability at runtime 
+- (MUST, LATER, LOW, BROAD)
 - PENDING
 
 - `DeclStmt` already carries `is_mutable` flag but the interpreter does not enforce it
@@ -202,7 +207,8 @@ VO has no reserved words and symbol-only syntax, making it uniquely suited to fu
 - Requires tracking mutability in `Environment` alongside the value
 
 
-### Output / stdio design (MUST, LATER)
+### Output / stdio design 
+- (MUST, LATER)
 - PENDING
 
 Current `printf_s`/`printf_i` are problematic. Type already encoded in the name, format string adds no value. Three options to choose from:
@@ -212,7 +218,8 @@ Current `printf_s`/`printf_i` are problematic. Type already encoded in the name,
   3. **Current:** `printf_i("%d\n", n)` style — neither simple nor powerful. Fix this.
 
 
-### Tail-call optimisation (COULD, LATER)
+### Tail-call optimisation 
+- (COULD, LATER, HIGH, BROAD)
 - PENDING
 
 - The interpreter currently uses the C++ call stack for recursion
@@ -221,7 +228,8 @@ Current `printf_s`/`printf_i` are problematic. Type already encoded in the name,
 - Intentionally deferred — only needed if large recursion depths become a use case
 
 
-### Profiling report (COULD, SOONER, MEDIUM, LARGE)
+### Profiling report 
+- (COULD, SOONER, MEDIUM, LARGE)
 - PENDING
 
 Goal: when `--profile` is passed, collect per-function timing and memory data and print a report on exit.
@@ -270,8 +278,8 @@ PROFILE REPORT
 ./vo --profile mygame.vo
 ```
 
-
-### AST Visualisation via Graphviz (COULD, SOONER, MEDIUM, LARGE)
+### AST Visualisation via Graphviz 
+- (COULD, SOONER, MEDIUM, LARGE)
 - PENDING
 
 Render the parsed AST as a Graphviz `.dot` graph, one per source file and one combined graph for the whole program including imports.
@@ -310,7 +318,8 @@ dot -Tpng program.dot -o program.png && xdg-open program.png
 ```
 
 
-### Visitor-style dispatch refactoring (SHOULD, LATER, HIGH, LIMITED)
+### Visitor-style dispatch refactoring 
+- (SHOULD, LATER, HIGH, LIMITED)
 - PENDING
 
 - Replace `dynamic_cast` chains in `Interpreter::eval` / `Interpreter::exec` with a proper visitor pattern
@@ -322,7 +331,8 @@ dot -Tpng program.dot -o program.png && xdg-open program.png
 - Intentionally deferred until feature set is more stable
 
 
-### Code Size & Complexity (COULD, LATER, MEDIUM, SMALL)
+### Code Size & Complexity 
+- (COULD, LATER, MEDIUM, SMALL)
 - PENDING
 
 Shorten Overall Code Length - Seems Excessive for a Small Language
@@ -399,7 +409,8 @@ p.speak()             // method inherited from Animal
 ```
 
 
-### null alias for `{}`  (COULD, SOONER, SMALL, SMALL)
+### null alias for `{}`  
+- (COULD, SOONER, SMALL, SMALL)
 - DONE
 
 - `{}` is already the language's null/empty sentinel — used wherever "nothing" is needed
@@ -409,13 +420,15 @@ p.speak()             // method inherited from Animal
 - FFI pointer dispatcher should treat empty hash as `NULL` (i.e. `nullptr`) — relevant for SDL3 and any C library that takes optional pointer arguments
 
 
-### Bare block `{ }` as zero-arg callable (COULD, LATER, SMALL, SMALL)
+### Bare block `{ }` as zero-arg callable 
+- (COULD, LATER, SMALL, SMALL)
 - DONE
 
 A syntax change that potentially breaks backward compatability. A `{ body }` in expression position with no leading param list is sugar for `() { body }`. Makes `func_name = { code }` a callable, invoked as `func_name()`. Currently `{ }` is always parsed as a hash literal — parser needs to distinguish.
 
 
-### Terminal graphics via ANSI escape codes (COULD, SOONER, SMALL, LARGE)
+### Terminal graphics via ANSI escape codes 
+- (COULD, SOONER, SMALL, LARGE)
 - DONE
 
 Cursor-addressed terminal output and non-blocking keyboard input suitable for simple video games, snake, roguelikes, text UI. No curses/ncurses dependency.
