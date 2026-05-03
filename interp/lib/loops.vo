@@ -1,14 +1,19 @@
 loops = {
+    
     while    = (cond, body) { ~{ ? !cond() { \ }  body() } }
+
     do_while = (body, cond) { ~{ body()  ? !cond() { \ } } }
+
     for      = (lo : int, hi : int, body) {
         i : int := lo
         ~{ ? i >= hi { \ }  body(i)  i := i + 1 }
     }
+
     for_step = (lo : int, hi : int, step : int, body) {
         i : int := lo
         ~{ ? i >= hi { \ }  body(i)  i := i + step }
     }
+
     for_down = (lo : int, hi : int, body) {
         i : int := hi - 1
         ~{ ? i < lo { \ }  body(i)  i := i - 1 }

@@ -1,4 +1,5 @@
 @ "tests/color.vo"
+@ "lib/loops.vo"
 
 ok : int := 1
 
@@ -19,6 +20,7 @@ café : int := 42
 🗺 = { x : int = 10  y : int = 20 }
 ? 🗺.x + 🗺.y == 30 { } { ok := 0 }
 
+
 // emoji callable
 ➕ = (a : int, b : int) { a + b }
 ? ➕(3, 4) == 7 { } { ok := 0 }
@@ -32,6 +34,41 @@ café : int := 42
 α = 1
 β = 2
 ? α + β == 3 { } { ok := 0 }
+
+// mixed: unicode leading, ASCII trailing
+🐺_count : int := 3
+? 🐺_count == 3 { } { ok := 0 }
+
+// mixed: ASCII leading, unicode trailing
+speed🚀 : int := 99
+? speed🚀 == 99 { } { ok := 0 }
+
+// mixed: ASCII, unicode, ASCII interleaved
+x🔥y : int := 7
+? x🔥y == 7 { } { ok := 0 }
+
+
+// mixed: extended-ASCII blended with ASCII
+naïve : int := 1
+? naïve == 1 { } { ok := 0 }
+
+// mixed identifier used as callable param and in arithmetic
+double🔢 = (n🔢 : int) { n🔢 * 2 }
+? double🔢(6) == 12 { } { ok := 0 }
+
+// mixed identifier as hash slot name, accessed via static member
+stats = { max🔢 : int = 100  min🔢 : int = 0 }
+? stats.max🔢 - stats.min🔢 == 100 { } { ok := 0 }
+
+// 🔁 as an alias for loops.while (U+1F501)
+🔁 = loops.while
+
+loop_count : int := 0
+🔁(
+    () { loop_count < 5 },
+    () { loop_count := loop_count + 1 }
+)
+? loop_count == 5 { } { ok := 0 }
 
 unicode_test_ok = ok
 report_test("unicode", unicode_test_ok)

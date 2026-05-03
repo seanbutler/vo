@@ -245,13 +245,7 @@ The goal is to separate three concerns cleanly:
 3. Interpreter errors → error template table → community-language diagnostics
 ```
 
-**Layer 1 — Configurable symbol table (lexer)**
-- Move operator mappings out of the hardcoded lexer into an external table (JSON or similar)
-- Communities remap any canonical symbol to any UTF-8 glyph (e.g. `?` → `если`, `:=` → `≔`)
-- Loaded at startup; falls back to built-in defaults if absent
-- Decide which symbols are fixed structural delimiters (braces, parens, comma) vs remappable
-
-**Layer 2 — UTF-8 support (lexer + runtime)**
+**Layer 1 — UTF-8 support (lexer + runtime)**
 - Lexer currently treats source as raw bytes; multi-byte sequences may be mishandled
 - Identifiers may contain UTF-8 characters (non-ASCII variable/function names)
 - String literals preserve UTF-8 content correctly
@@ -259,7 +253,7 @@ The goal is to separate three concerns cleanly:
 - Operator glyphs in the symbol table may themselves be multi-byte
 - Approach: decode source to codepoints before lexing, or UTF-8-aware character classification
 
-**Layer 3 — Error message templates (runtime)**
+**Layer 2 — Error message templates (runtime)**
 - Externalise all `RuntimeError` and `ParseError` strings into a template table
 - Templates must support:
   - Argument reordering (Arabic, Japanese, Turkish word order)
