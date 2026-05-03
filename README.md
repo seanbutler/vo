@@ -1,10 +1,8 @@
 # VO
 
-A minimal, expression-oriented programming language. The name comes from *lingvo* — Esperanto for *language*.
+Vo is a small, expression-oriented programming language. The name comes from *lingvo* — Esperanto for *language*.
 
-## Philosophy
-
-VO has one universal data structure: the **hash**. Objects, modules, namespaces, prototypes, and constructors are all hashes. There are no classes, no arrays — only hashes, callables, loops, and recursion.
+At its core, Vo provides a  one universal data structure: the **hash**. Objects, modules, namespaces, prototypes, and constructors are all hashes. There are no classes, no arrays — only hashes, callables, loops, and recursion.
 
 Everything is an expression. Blocks return their last value. There is no `return` keyword.
 
@@ -16,6 +14,11 @@ name = value                  // immutable, untyped
 name : type = value           // immutable, typed
 name : type := value          // mutable, typed
 target := new_value           // reassignment
+
+// identifiers — any UTF-8 sequence of letters, digits, _ and Unicode bytes
+🐺 = "wolf"
+speed🚀 : int := 0
+café : int = 42
 
 // hash (object / module / prototype)
 point = { x : int = 0  y : int = 0 }
@@ -88,6 +91,10 @@ spec = { lib : string = "libc.so.6"  abi : string = "c"
          params = { p1 : string = "cstring" }
          returns : string = "int" }
 puts = $$ spec
+
+// built-in functions
+ifloor(3.7)               // → 3  (double → int, floor semantics)
+char_at("hello", 1)       // → "e"  (single-character string at index)
 ```
 
 ## Key features
@@ -101,7 +108,8 @@ puts = $$ spec
 - **Loop primitive** — `~{ }` is an infinite loop block; `\` escapes it (lexically scoped, parse-time enforced); `!` is logical NOT
 - **C FFI via `$$`** — bind and call C library functions directly
 - **No reserved words** — only symbols; `@` import, `?` conditional, `~{ }` loop, `\` break, `!` not, `>>` iteration, `$$` FFI
-- **Unicode identifiers** — any UTF-8 byte sequence is a valid identifier name, including emoji and extended-ASCII glyphs (e.g. `🐺 = "wolf"`, `café : int := 0`)
+- **Unicode identifiers** — any UTF-8 byte sequence is a valid identifier name, including emoji and extended-ASCII glyphs (e.g. `🐺 = "wolf"`, `speed🚀 : int := 0`, `café : int = 42`)
+- **Built-in functions** — `ifloor(x)` truncates a double to int; `char_at(s, i)` returns the single-character string at index `i`
 
 ## Building
 
@@ -292,10 +300,13 @@ Full source: `interp/alias.vo`
 | `interp/lib/stdlib.vo` | `clone`, `merge`, `subtype`, `without`, `has`, `size`, `rename`, `filter_map`, `map_values` |
 | `interp/lib/metalib.vo` | Module interface helpers — `pick`, `omit`, `remap`, `public_api`, `exports_only` |
 | `interp/lib/cstdio.vo` | C stdio descriptor library |
-| `interp/lib/cstdlib.vo` | C stdlib descriptor library |
+| `interp/lib/cstdlib.vo` | C stdlib descriptor library (`strlen`, `strcmp`, `strncmp`, `rand`, …) |
+| `interp/lib/cstring.vo` | String utility hash `str` — `str.len`, `str.cmp`, `str.ncmp` (wraps cstdlib) |
+| `interp/lib/cmath.vo` | C math descriptor library — `sin`, `cos`, `sqrt`, `pow`, `floor`, `ceil`, and more |
 | `interp/lib/ffi.vo` | FFI helper (`bind_one`, `bind_lib`) |
 | `interp/lib/logic.vo` | `logic` hash — `not`, `and`, `or` (lazy boolean) |
 | `interp/lib/loops.vo` | `loops` hash — `while`, `do_while`, `for`, `for_step`, `for_down` |
+| `interp/lib/vtkit.vo` | Terminal double-buffered rendering — `vtk` hash (`buffer_init`, `buffer_clear`, `buffer_vline`, `buffer_text`, `buffer_present`, colour constants, …) |
 | `interp/alias.vo` | Example: using `logic` and `loops` together |
 
 ## Related languages
