@@ -13,6 +13,7 @@
 @ "tests/test_float.vo"
 @ "tests/test_oo.vo"
 @ "tests/test_private.vo"
+@ "tests/test_unicode.vo"
 @ "tests/color.vo"
 
 all_tests_ok : int = stdlib_test_ok
@@ -30,5 +31,6 @@ all_tests_ok : int = stdlib_test_ok
     * float_test_ok
     * oo_test_ok
     * private_test_ok
+    * unicode_test_ok
     
 report_test("all-tests", all_tests_ok)

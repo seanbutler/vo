@@ -101,6 +101,7 @@ puts = $$ spec
 - **Loop primitive** — `~{ }` is an infinite loop block; `\` escapes it (lexically scoped, parse-time enforced); `!` is logical NOT
 - **C FFI via `$$`** — bind and call C library functions directly
 - **No reserved words** — only symbols; `@` import, `?` conditional, `~{ }` loop, `\` break, `!` not, `>>` iteration, `$$` FFI
+- **Unicode identifiers** — any UTF-8 byte sequence is a valid identifier name, including emoji and extended-ASCII glyphs (e.g. `🐺 = "wolf"`, `café : int := 0`)
 
 ## Building
 
