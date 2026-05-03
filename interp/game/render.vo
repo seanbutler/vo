@@ -1,0 +1,111 @@
+@ "game/map.vo"
+
+// Map distance to a grayscale level (232=darkest .. 255=brightest).
+wall_gray = (dist : double) {
+    g : int = ifloor(255.0 - dist * 5.0)
+    ? g < 232 { 232 } { g }
+}
+
+// Cast one ray for screen column col against the map, returning draw bounds and distance.
+cast_ray = (col : int, p) {
+    camera_x : double = 2.0 * col / COLS_F - 1.0
+    rdx      : double = p.dir_x + p.plane_x * camera_x
+    rdy      : double = p.dir_y + p.plane_y * camera_x
+
+    mx : int := ifloor(p.pos_x)
+    my : int := ifloor(p.pos_y)
+
+    ddx : double = ? rdx == 0.0 { 9999.0 } { math.fabs(1.0 / rdx) }
+    ddy : double = ? rdy == 0.0 { 9999.0 } { math.fabs(1.0 / rdy) }
+
+    step_x : int    := 1
+    step_y : int    := 1
+    sdx    : double := 0.0
+    sdy    : double := 0.0
+
+    ? rdx < 0.0 {
+        step_x := -1
+        sdx    := (p.pos_x - mx) * ddx
+    } {
+        sdx := (mx + 1.0 - p.pos_x) * ddx
+    }
+
+    ? rdy < 0.0 {
+        step_y := -1
+        sdy    := (p.pos_y - my) * ddy
+    } {
+        sdy := (my + 1.0 - p.pos_y) * ddy
+    }
+
+    // DDA march: advance to nearest grid line until we hit a wall.
+    side : int := 0
+    ~{
+        ? sdx < sdy {
+            sdx  := sdx + ddx
+            mx   := mx + step_x
+            side := 0
+        } {
+            sdy  := sdy + ddy
+            my   := my + step_y
+            side := 1
+        }
+        ? map_cell(mx, my) == 1 { \ } { }
+    }
+
+    // Perpendicular distance avoids fisheye distortion.
+    perp : double = ? side == 0 { sdx - ddx } { sdy - ddy }
+    safe : double = ? perp < 0.001 { 0.001 } { perp }
+
+    wall_h : int = ifloor(ROWS_F / safe)
+    ds     : int := ROWS / 2 - wall_h / 2
+    de     : int := ROWS / 2 + wall_h / 2
+    ? ds < 0     { ds := 0        } { }
+    ? de >= ROWS { de := ROWS - 1 } { }
+
+    { draw_start : int = ds   draw_end : int = de   dist : double = safe }
+}
+
+// Draw 16x16 minimap in the top-right corner.
+draw_minimap = (p) {
+    ox : int = COLS - MAP.w
+    loops.for(0, MAP.h, (my : int) {
+        loops.for(0, MAP.w, (mx : int) {
+            c : int = ? map_cell(mx, my) == 1 { 245 } { 235 }
+            vtk.buffer_vline(ox + mx, my, 1, 32, c, c)
+        })
+    })
+    px : int = ox + ifloor(p.pos_x)
+    py : int = ifloor(p.pos_y)
+    vtk.buffer_vline(px, py, 1, 32, 226, 226)
+}
+
+// Draw one full frame into the vtk double-buffer and present it.
+draw_frame = (p) {
+    vtk.buffer_clear(32, 232, 232)
+
+    loops.for(0, COLS, (col : int) {
+        ray = cast_ray(col, p)
+
+        // Ceiling — dark navy (256-color cube: index 17 = #00005f)
+        ? ray.draw_start > 0 {
+            vtk.buffer_vline(col, 0, ray.draw_start, 32, 17, 17)
+        } { }
+
+        // Wall slice — grayscale shaded by distance
+        wall_len : int = ray.draw_end - ray.draw_start
+        ? wall_len > 0 {
+            gray : int = wall_gray(ray.dist)
+            vtk.buffer_vline(col, ray.draw_start, wall_len, 32, gray, gray)
+        } { }
+
+        // Floor — dark forest green (256-color cube: index 22 = #005f00)
+        floor_len : int = ROWS - ray.draw_end
+        ? floor_len > 0 {
+            vtk.buffer_vline(col, ray.draw_end, floor_len, 32, 22, 22)
+        } { }
+    })
+
+    draw_minimap(p)
+    vtk.buffer_text(0, ROWS - 1, "Wolf  |  WASD move/turn  |  q quit", 255, 232)
+    vtk.buffer_present()
+}

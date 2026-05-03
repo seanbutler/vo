@@ -1,0 +1,37 @@
+@ "game/map.vo"
+
+// Player state and movement.
+// Clone this to create an instance: p = clone(Player)
+
+Player = {
+    pos_x   : double = 1.5
+    pos_y   : double = 1.5
+    dir_x   : double = 1.0    // facing east
+    dir_y   : double = 0.0
+    plane_x : double = 0.0    // camera plane perpendicular to dir
+    plane_y : double = 0.66   // length 0.66 gives ~66 degree FOV
+
+    // Move forward (fwd=1) or backward (fwd=-1), with wall collision.
+    move = (fwd : int) {
+        spd : double = ? fwd == 1 { MOVE_SPEED } { -MOVE_SPEED }
+        nx  : double = self.pos_x + self.dir_x * spd
+        ny  : double = self.pos_y + self.dir_y * spd
+        ? map_cell(ifloor(nx), ifloor(self.pos_y)) == 0 { self.pos_x := nx } { }
+        ? map_cell(ifloor(self.pos_x), ifloor(ny)) == 0 { self.pos_y := ny } { }
+    }
+
+    // Rotate left (dir=1) or right (dir=-1).
+    turn = (dir : int) {
+        a  : double = ? dir == 1 { ROT_SPEED } { -ROT_SPEED }
+        c  : double = math.cos(a)
+        s  : double = math.sin(a)
+        dx : double = self.dir_x
+        dy : double = self.dir_y
+        px : double = self.plane_x
+        py : double = self.plane_y
+        self.dir_x   := dx * c - dy * s
+        self.dir_y   := dx * s + dy * c
+        self.plane_x := px * c - py * s
+        self.plane_y := px * s + py * c
+    }
+}

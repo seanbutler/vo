@@ -20,6 +20,7 @@ private:
     std::vector<Token> tokens_;
     size_t             pos_        = 0;
     int                loop_depth_ = 0;
+    int                last_line_  = 1;
 
     // ── token helpers ─────────────────────────────────────────────────────────
     const Token& peek(int offset = 0) const;

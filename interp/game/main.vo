@@ -1,0 +1,27 @@
+@ "lib/stdlib.vo"
+@ "game/player.vo"
+@ "game/render.vo"
+
+vtk.raw_mode()
+vtk.hide_cursor()
+vtk.begin()
+vtk.buffer_init(COLS, ROWS)
+
+p = clone(Player)
+
+~{
+    k : int = vtk.getch()
+
+    ? k == 113 { \ } { }           // q — quit
+    ? k == 119 { p.move(1)   } { } // w — forward
+    ? k == 115 { p.move(-1)  } { } // s — back
+    ? k == 97  { p.turn(-1)  } { } // a — turn right
+    ? k == 100 { p.turn(1)   } { } // d — turn left
+
+    draw_frame(p)
+}
+
+vtk.buffer_free()
+vtk.show_cursor()
+vtk.restore_mode()
+vtk.end()

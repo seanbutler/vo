@@ -8,6 +8,7 @@
 #include <sstream>
 #include <cstdlib>
 #include <cassert>
+#include <cmath>
 
 namespace lang {
 
@@ -103,6 +104,35 @@ Interpreter::Interpreter(bool verbose)
 }
 
 void Interpreter::register_builtins() {
+    // ifloor(x) — truncate double to int (floor semantics); int passes through unchanged.
+    {
+        auto nc = std::make_shared<NativeCallable>();
+        nc->name = "ifloor";
+        nc->invoke = [](const std::vector<ValuePtr>& args) -> ValuePtr {
+            if (args.size() != 1) throw RuntimeError("ifloor expects 1 argument");
+            if (args[0]->is_int())    return args[0];
+            if (args[0]->is_double()) return Value::from(static_cast<int64_t>(std::floor(args[0]->as_double())));
+            throw RuntimeError("ifloor: expected a number");
+        };
+        globals_->define("ifloor", Value::from(nc));
+    }
+
+    // char_at(str, index) — return single-character string at position index.
+    {
+        auto nc = std::make_shared<NativeCallable>();
+        nc->name = "char_at";
+        nc->invoke = [](const std::vector<ValuePtr>& args) -> ValuePtr {
+            if (args.size() != 2) throw RuntimeError("char_at expects 2 arguments");
+            if (!args[0]->is_string()) throw RuntimeError("char_at: first argument must be a string");
+            if (!args[1]->is_int())    throw RuntimeError("char_at: second argument must be an int");
+            const std::string& s = args[0]->as_string();
+            int64_t idx = args[1]->as_int();
+            if (idx < 0 || idx >= static_cast<int64_t>(s.size()))
+                throw RuntimeError("char_at: index out of bounds");
+            return Value::from(std::string(1, s[static_cast<size_t>(idx)]));
+        };
+        globals_->define("char_at", Value::from(nc));
+    }
 }
 
 // --- program entry --------------------------------------------------------------

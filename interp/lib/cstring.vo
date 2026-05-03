@@ -1,0 +1,10 @@
+@ "lib/cstdlib.vo"
+
+// String utilities — thin wrappers around cstdlib bindings.
+// char_at(s, i) is a language builtin, not listed here.
+
+str = {
+    len  = cstd.strlen   // str.len(s)        → int
+    cmp  = cstd.strcmp   // str.cmp(a, b)     → int (-1/0/1)
+    ncmp = cstd.strncmp  // str.ncmp(a, b, n) → int
+}

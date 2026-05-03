@@ -21,7 +21,7 @@ TokenType Parser::peek_type(int offset) const { return peek(offset).type; }
 
 const Token& Parser::advance() {
     const Token& t = tokens_[pos_];
-    if (t.type != TT::Eof) ++pos_;
+    if (t.type != TT::Eof) { last_line_ = t.line; ++pos_; }
     return t;
 }
 
@@ -193,7 +193,7 @@ ExprPtr Parser::parse_postfix() {
                 std::string mem = expect(TT::Identifier).lexeme;
                 expr = std::make_shared<MemberExpr>(std::move(expr), mem);
             }
-        } else if (check(TT::LParen)) {
+        } else if (check(TT::LParen) && peek().line == last_line_) {
             // '() =' is a hash constructor member — stop here, don't eat it as a call
             if (check(TT::RParen, 1) && check(TT::Assign, 2)) break;
             advance(); // '('

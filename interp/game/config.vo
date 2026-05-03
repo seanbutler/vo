@@ -1,0 +1,14 @@
+@ "lib/vtkit.vo"
+@ "lib/cmath.vo"
+@ "lib/ffi.vo"
+@ "lib/loops.vo"
+
+math = bind_lib(cmath)
+
+COLS   : int    = vtk.get_width()
+ROWS   : int    = vtk.get_height()
+COLS_F : double = 0.0 + COLS
+ROWS_F : double = 0.0 + ROWS
+
+MOVE_SPEED : double = 0.05
+ROT_SPEED  : double = 0.04
