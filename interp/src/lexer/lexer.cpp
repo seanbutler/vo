@@ -101,7 +101,8 @@ Token Lexer::read_number() {
 Token Lexer::read_word() {
     int ln = line_, cl = col_;
     std::string buf;
-    while (!at_end() && (std::isalnum(peek()) || peek() == '_')) buf += advance();
+    while (!at_end() && (std::isalnum(peek()) || peek() == '_'
+                         || (static_cast<unsigned char>(peek()) > 127))) buf += advance();
     auto it = KEYWORDS.find(buf);
     TokenType tt = (it != KEYWORDS.end()) ? it->second : TokenType::Identifier;
     return { tt, buf, ln, cl };
@@ -120,7 +121,7 @@ std::vector<Token> Lexer::tokenize() {
 
         if (c == '"')              { tokens.push_back(read_string());  continue; }
         if (std::isdigit(c))       { tokens.push_back(read_number()); continue; }
-        if (std::isalpha(c) || c == '_') { tokens.push_back(read_word()); continue; }
+        if (std::isalpha(c) || c == '_' || (static_cast<unsigned char>(c) > 127)) { tokens.push_back(read_word()); continue; }
 
         advance(); // consume single-char token
 
