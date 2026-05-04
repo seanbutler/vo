@@ -1,6 +1,9 @@
+
 @ "lib/stdlib.vo"
-@ "game/player.vo"
-@ "game/render.vo"
+
+@ "./examples/wolf/player.vo"
+@ "./examples/wolf/render.vo"
+
 
 vtk.raw_mode()
 vtk.hide_cursor()

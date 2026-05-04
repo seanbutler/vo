@@ -1,4 +1,4 @@
-@ "game/map.vo"
+@ "./examples/wolf/map.vo"
 
 // Map distance to a grayscale level (232=darkest .. 255=brightest).
 wall_gray = (dist : double) {

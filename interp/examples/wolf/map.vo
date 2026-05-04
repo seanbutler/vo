@@ -1,4 +1,4 @@
-@ "game/config.vo"
+@ "./examples/wolf/config.vo"
 
 // 16x16 map. Each row is a 16-character string: '1' = wall, '0' = floor.
 // Bit 0 (leftmost char) = column 0.
@@ -6,21 +6,22 @@
 MAP = {
     w : int = 16
     h : int = 16
+
     k0  : string = "1111111111111111"  // row  0
-    k1  : string = "1000000000000001"  // row  1  <- player starts at (1.5, 1.5)
-    k2  : string = "1011100001111001"  // row  2
-    k3  : string = "1010001000001001"  // row  3
-    k4  : string = "1010001000001001"  // row  4
-    k5  : string = "1010001111100001"  // row  5
-    k6  : string = "1010000000100001"  // row  6
-    k7  : string = "1011111000100001"  // row  7
-    k8  : string = "1000001000100001"  // row  8
-    k9  : string = "1001101001100001"  // row  9
-    k10 : string = "1001001001000001"  // row 10
-    k11 : string = "1001001000000001"  // row 11
-    k12 : string = "1001001011110001"  // row 12
-    k13 : string = "1000001000010001"  // row 13
-    k14 : string = "1000000000010001"  // row 14
+    k1  : string = "1O             1"  // row  1  <- player starts at (1.5, 1.5)
+    k2  : string = "1 111    111   1"  // row  2
+    k3  : string = "1 1   1     1  1"  // row  3
+    k4  : string = "1 1   1     1  1"  // row  4
+    k5  : string = "1 1   11111    1"  // row  5
+    k6  : string = "1 1       1    1"  // row  6
+    k7  : string = "1 11111   1 1111"  // row  7
+    k8  : string = "1     1   1 1  1"  // row  8
+    k9  : string = "1  11 1  11 1  1"  // row  9
+    k10 : string = "1  1  1  1  1  1"  // row 10
+    k11 : string = "1  1  1        1"  // row 11
+    k12 : string = "1  1  1 1111   1"  // row 12
+    k13 : string = "1  1  1    1   1"  // row 13
+    k14 : string = "1  1       1  X1"  // row 14
     k15 : string = "1111111111111111"  // row 15
 }
 

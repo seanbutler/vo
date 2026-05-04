@@ -1,4 +1,5 @@
-@ "game/map.vo"
+@ "./examples/wolf/map.vo"
+
 
 // Player state and movement.
 // Clone this to create an instance: p = clone(Player)

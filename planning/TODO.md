@@ -27,6 +27,344 @@ This gives us a shorthand to record opinions about this feature useful in orderi
 
 ## PENDING
 
+### Homoiconicity — `parse` and `eval` builtins
+- (COULD, LATER, HIGH, BROAD)
+- PENDING
+
+**Vision**
+
+VO's AST is exposed as VO hashes. Code becomes data; data becomes executable. Two builtins enable this:
+
+- **`parse(s : string)`** — lexes and parses a VO source string, returns the AST as a VO hash
+- **`eval(node)`** — takes a VO hash AST and executes it in the current environment
+
+```vo
+tree = parse("1 + 2")
+// tree = { type = "binary"  op = "+"  left = { type = "int"  value = 1 }  right = { type = "int"  value = 2 } }
+
+eval(tree)   // → 3
+```
+
+Once these exist, operator precedence reordering is expressible entirely in VO:
+
+```vo
+prec = { + = 6  - = 6  * = 7  / = 7  % = 7 }
+
+reorder = @(node) {
+    // walk node, restructure binary subtrees according to prec hash
+    ...
+}
+
+eval(reorder(parse("1 + 2 * 3")))   // → 7, not 9
+```
+
+Any syntax transform becomes a VO library — macros, precedence, DSLs, code generation — without touching the interpreter.
+
+**AST hash schema**
+
+| Node type | Hash shape |
+|-----------|-----------|
+| Integer   | `{ type = "int"  value = n }` |
+| Float     | `{ type = "float"  value = f }` |
+| String    | `{ type = "string"  value = s }` |
+| Identifier | `{ type = "ident"  name = s }` |
+| Binary    | `{ type = "binary"  op = s  left = node  right = node }` |
+| Unary     | `{ type = "unary"  op = s  operand = node }` |
+| Call      | `{ type = "call"  callee = node  args = { ... } }` |
+| Hash literal | `{ type = "hash"  members = { ... } }` |
+| Callable  | `{ type = "callable"  params = { ... }  body = { ... } }` |
+| Cond      | `{ type = "cond"  cond = node  then = { ... }  else = { ... } }` |
+| Decl      | `{ type = "decl"  name = s  mutable = int  value = node }` |
+| Assign    | `{ type = "assign"  target = node  value = node }` |
+
+**Implementation**
+
+*Step 1 — AST serialiser*: walk the existing C++ AST nodes and emit VO hash values. One visitor method per node type. No new AST nodes required.
+
+*Step 2 — `parse` builtin*: calls the existing `Lexer` + `Parser`, then the serialiser. Returns a `ValuePtr` hash.
+
+*Step 3 — AST deserialiser*: walk a VO hash and reconstruct C++ AST nodes. Inverse of the serialiser.
+
+*Step 4 — `eval` builtin*: calls the deserialiser then `Interpreter::eval()` on the result.
+
+**Breaking change**: none — additive only.
+
+
+### Unified dot / infix / prefix — one dispatch rule
+- (MUST, LATER, HIGH, BROAD)
+- PENDING
+
+**Insight**
+
+Dot notation and infix operators are the same transformation — first argument moves left of the function name:
+
+```
+f(a, b)   →   a.f(b)    // dot notation
+f(a, b)   →   a + b     // infix operator
+```
+
+Both are syntactic sugar for the same underlying call. Unifying them under one dispatch rule gives:
+
+1. **Look up the function name as a slot on the first argument** (prototype chain) — operator overloading
+2. **Fall through to global scope** — UFCS (Uniform Function Call Syntax)
+
+```vo
+a + b          // sugar for a.+(b)
+a.+(b)         // explicit dot form of the same call
++(a, b)        // pure prefix — global lookup only, no receiver
+
+a.f(b)         // looks up f on a first, falls through to global f(a, b)
+f(a, b)        // pure prefix equivalent
+```
+
+Operator overloading falls out for free — add a `+` slot to any hash and it intercepts `a + b` for that type:
+
+```vo
+Vec = {
+    x : int = 0
+    y : int = 0
+    + = @(other) { Vec(self.x + other.x  self.y + other.y) }
+}
+v1 = Vec(1  2)
+v2 = Vec(3  4)
+v3 = v1 + v2    // a.+(b) → looks up + on v1 → Vec.+
+```
+
+UFCS means dot and prefix are interchangeable when the name is not a member:
+
+```vo
+double = @(x : int) { x * 2 }
+5.double()     // looks up double on 5 (int), not found, falls through to global → double(5)
+```
+
+**The single dispatch rule**
+
+> `.` means: look up the name starting from the left operand's prototype chain, then global scope; pass the left operand as the first argument.
+
+Infix operator syntax is `.` with the function name written between operands instead of after the dot. They are one rule, not two.
+
+**Consequences**
+
+- Dot notation, infix operators, and UFCS unify into one mechanism
+- Operator overloading requires no new language feature — just a `+` slot on a hash
+- The symbol table shrinks — `.` and infix dispatch are the same rule
+- Prefix `f(a, b)` bypasses receiver lookup entirely — explicit global call
+- Complements operators-as-callables (see below): once `+` is a callable identifier, `a.+(b)` is already valid syntax
+
+**Implementation**
+
+Depends on:
+- Operators as first-class callables (operator glyphs as identifiers)
+- Flat binary expression parser (no hardcoded precedence ladder)
+
+*Step 1*: extend member lookup in `parse_postfix()` — after `.name`, if followed by `(`, pass left operand as implicit first argument alongside explicit args.
+
+*Step 2*: extend infix operator rewrite — `a op b` rewrites to `a.op(b)` rather than `op(a, b)`; receiver lookup attempted first, global fallback second.
+
+*Step 3*: update `HashInstance::get` / interpreter call path to support the fallthrough from receiver to global scope.
+
+*Step 4*: update `self` binding — `self` is bound to the receiver (left operand) when lookup succeeds on the prototype chain; not bound on global fallthrough.
+
+
+### Operators as first-class callables
+- (MUST, LATER, HIGH, BROAD)
+- PENDING
+
+**Vision**
+
+Arithmetic operators `+` `-` `*` `/` `%` become pre-bound callable identifiers. Infix syntax is purely a parser rewrite — `a + b` desugars to `+(a, b)` at parse time. Users can shadow, redefine, or delegate operators like any other callable. Combined with the localisation symbol table, any operator glyph becomes remappable.
+
+```vo
+// built-in pre-bindings (in stdlib or interpreter bootstrap)
++ = @(a : int  b : int) { ... }   // native add
+* = @(a : int  b : int) { ... }
+
+// user override — redefine + for a vector type
+Vec = {
+    x : int = 0
+    y : int = 0
+    + = @(other) { Vec(self.x + other.x  self.y + other.y) }
+}
+```
+
+**Precedence decision**
+
+The current parser encodes precedence structurally (multiplicative ladder sits above additive). If operators become plain callables this structure must change. Two options:
+
+1. **No precedence — explicit parentheses required**
+   - `3 + 4 * 2` becomes a parse error or left-to-right: must write `3 + (4 * 2)`
+   - Consistent with VO's philosophy — no hidden rules, programmer states intent explicitly
+   - Simplifies the parser significantly (flat binary expression level)
+   - **Preferred option**
+
+2. **Precedence metadata on callables**
+   - Each operator callable carries a `_prec` slot (e.g. `*.prec = 7  +._prec = 5`)
+   - Parser reads this at parse time to order rewrites
+   - Complex to implement; mixes runtime values into parse-time decisions
+
+**Preferred: adopt no precedence, require explicit parentheses.** This is consistent with VO's principle that the programmer states intent explicitly — the same reason there is no implicit return ambiguity, no hidden coercion, and no reserved words.
+
+---
+
+**Step 1 — infix rewrite for named functions (prerequisite)**
+
+Already in TODO as "User-defined infix call syntax". Implement `` a `f` b `` → `f(a, b)` first. This establishes the parse-time rewrite infrastructure that operator desugaring will reuse.
+
+**Step 2 — make operator glyphs valid identifier starts in the lexer**
+
+Currently `+` `-` `*` `/` `%` are single-char tokens consumed before the identifier path. Extend the lexer so that a bare `+` (not followed by a digit or another operator) is tokenised as an `Identifier` with lexeme `"+"`. Requires careful ordering in `tokenize()` to avoid breaking numeric literals and existing operator tokens.
+
+**Step 3 — flatten the parser precedence ladder**
+
+Replace the `parse_additive` / `parse_multiplicative` / `parse_comparison` chain with a single `parse_binary()` level. All infix operator tokens (`+` `-` `*` `/` `%` `==` `!=` `<` `<=` `>` `>=`) rewrite to calls at the same precedence — left to right. Mixed expressions without parentheses either parse left-to-right or are a parse error (decision: parse error preferred, forces explicitness).
+
+**Step 4 — bootstrap operator bindings**
+
+Pre-bind `+` `-` `*` `/` `%` in the interpreter's `register_builtins()` (or a `lib/operators.vo`) as native callables wrapping the existing C++ arithmetic. These are ordinary environment bindings — shadowing them replaces the operator for that scope.
+
+**Step 5 — comparison operators**
+
+Same treatment for `==` `!=` `<` `<=` `>` `>=` — each becomes a pre-bound callable. This enables user-defined equality and ordering for custom hash types.
+
+**Step 6 — remove operator tokens from the token set**
+
+Once all operator glyphs are identifiers, `TT::Plus`, `TT::Minus`, `TT::Star`, `TT::Slash`, `TT::Percent` are removed from the token type enum. The lexer symbol table shrinks by 5+ entries. The comparison token types follow once Step 5 is complete.
+
+**Result**
+
+```vo
+# "lib/operators.vo"    // provides + - * / % == != < <= > >=
+
+x = (3 + (4 * 2))      // explicit parentheses required — no precedence
+y = 3 + 4 * 2          // parse error: ambiguous without parentheses
+
+// operator overloading via hash slot
+Vec = {
+    x : int = 0
+    y : int = 0
+    + = @(other) { Vec(self.x + other.x  self.y + other.y) }
+}
+v1 = Vec(1  2)
+v2 = Vec(3  4)
+v3 = v1 + v2            // desugars to +(v1, v2) → Vec.+ lookup via self
+```
+
+**Breaking change**: all existing expressions using `+` `-` `*` `/` `%` without explicit parentheses around mixed operators will need parentheses added.
+
+
+### Drop comma from parameter lists
+- (MUST, SOONER, LOW, BROAD)
+- PENDING
+
+Parameter lists currently require commas between parameters:
+
+```vo
+add = @(a : int, b : int) { a + b }
+```
+
+Commas are not needed — parameters are always `name` or `name : type`, both starting with an identifier, so whitespace separation is unambiguous. Hash members already use whitespace separation with no comma; dropping commas from parameter lists makes the language fully consistent:
+
+```vo
+add = @(a : int  b : int) { a + b }
+```
+
+Call arguments retain commas for now — `f(a -b)` is ambiguous without them (unary minus vs binary minus).
+
+**Implementation — parser only**
+
+- In `parse_param_list()`, replace `while (match(TT::Comma))` with a loop that continues as long as the next token is an identifier (i.e. the start of a new parameter) and not `TT::RParen`
+- No lexer changes; no AST changes; no runtime changes
+
+**Migration**
+
+- Remove all commas from parameter lists in `interp/lib/`, `interp/tests/`, `interp/examples/`, `interp/game/`
+- Mechanical find-and-replace; existing tests confirm correctness after
+
+**Breaking change**: all callables with multiple parameters need commas removed from their parameter lists.
+
+
+### Swap `@` / `#` — callable sigil and import sigil
+- (MUST, SOONER, LOW, BROAD)
+- PENDING
+
+**Motivation**
+
+Callables and grouped expressions are currently ambiguous — both start with `(`.
+The parser resolves this with a lookahead heuristic (`looks_like_callable()`: scan to matching `)`, check if `{` follows). This is fragile and prevents `(expr) { hash }` from ever being written as two adjacent statements.
+
+A callable sigil eliminates the ambiguity with zero lookahead. `@` is the natural choice; `#` is the natural choice for import.
+
+**The swap**
+
+| Today | After |
+|-------|-------|
+| `@ "lib/stdio.vo"` | `# "lib/stdio.vo"` |
+| `(x, y) { x + y }` | `@(x, y) { x + y }` |
+
+- **`#`** — universally read as preprocessor / include / meta (`#include`, `#import`). Zero ambiguity with any future operator.
+- **`@`** — already carries "at / address / callable" semantics (Python decorator + matrix multiply, Ruby instance vars). `@(x) { body }` reads naturally as a callable literal.
+
+**Implementation**
+
+*Step 1 — lexer*: `@` already emits `TokenType::At`. No token type change needed — the parser just gains a new interpretation for `At`.
+
+*Step 2 — parser `parse_primary()`*:
+- Replace the `check(TT::At)` import branch: `#` (`TT::Hash`, new token) triggers `parse_import()`
+- Add `check(TT::At)` branch *before* the `LParen` check: consume `@`, then call `parse_callable()` directly — no lookahead needed
+- Remove `looks_like_callable()` and its call site entirely
+
+*Step 3 — parser `parse_stmt()`*:
+- Import now triggered by `TT::Hash` instead of `TT::At`
+
+*Step 4 — lexer*:
+- Add `#` → `TT::Hash` token (currently `#` hits `default: error(...)`)
+
+*Step 5 — migrate all `.vo` files*:
+- Global find-and-replace `@ "` → `# "` across `interp/lib/`, `interp/tests/`, `interp/examples/`, `interp/game/`
+- Mechanical; no logic changes
+
+**Result**
+
+```vo
+# "lib/stdio.vo"         // import — reads like #include
+# "lib/loops.vo"
+
+add = @(a : int, b : int) { a + b }   // callable — unambiguous
+f = @(x) { x * 2 }
+result = f(21)
+```
+
+Grammar becomes unambiguous with one token of lookahead. `looks_like_callable()` deleted. `#` is safe from future operator conflicts; `@` has no plausible future use as an arithmetic operator.
+
+*Step 6 — extend test coverage*:
+- Existing tests cover callable *behaviour* but not callable *syntax* as a distinct form
+- Add cases to `tests/test_unicode.vo` or a new `tests/test_callable_syntax.vo` that explicitly exercise `@(x) { }` in positions that previously relied on `looks_like_callable()`:
+  - Zero-param callable: `@() { 42 }`
+  - Callable immediately followed by a hash literal (the previously ambiguous case): `f = @(x) { x }  data = { key = 1 }`
+  - Callable as a hash member value
+  - Callable passed as an argument
+
+**Breaking change**: all existing `.vo` source files need the mechanical `@ "` → `# "` substitution.
+
+
+### Interpreter Runtime Controls
+
+We need to set controls (flags?) in the interpreter
+
+**Choices:**
+- Confguration File for Defaults
+- Override Via Flags For Specific Calls of Interpreter
+
+**Options:**
+- Vo Lib @ include Folder
+- config for c linking details
+- Visualisations
+- Optimisations
+
+
+
+
+
 ### SDL3 binding via C shim
 - (MUST, SOONER, LOW, HIGH)
 - PENDING
@@ -282,6 +620,120 @@ Current `printf_s`/`printf_i` are problematic. Type already encoded in the name,
   1. **Simple:** bind `puts(str)` for strings + a thin C wrapper `print_int(int)` — callers never see a format string
   2. **Better:** full varargs `printf(fmt, ...)` FFI support — useful when padding/alignment/precision matter
   3. **Current:** `printf_i("%d\n", n)` style — neither simple nor powerful. Fix this.
+
+
+### Publication roadmap
+- (MUST, SOONER, LOW, BROAD)
+- PENDING
+
+Four papers have been identified from VO's design. They have a dependency order — earlier papers provide engineering foundations for later ones.
+
+```
+Paper 3  (cache-aware AST layout)          ← implement and publish first
+    ↓  provides: arena allocator, visit counter, benchmark suite
+Paper 4  (shared profiling architecture)   ← needs bytecode VM added
+    ↓  provides: profile export format, end-to-end pipeline
+Paper 1  (language design / emergence)     ← needs homoiconicity, unified dispatch
+Paper 2  (theory / hash rewriting)         ← speculative; pursue in parallel with 1
+```
+
+**Paper 3** — Cache-aware AST layout *(VEE / ISMM / DLS)*
+- Arena allocator replacing `std::shared_ptr` heap allocation
+- Visit counter per AST node
+- Runtime cache size query (L1/L2/L3)
+- Hot subgraph compaction into cache-tier regions
+- Benchmark: scattered vs static flat vs runtime-guided
+- Most immediately actionable; confirmed gap in literature
+
+**Paper 4** — Shared profiling architecture across staged runtimes *(OOPSLA / MoreVMs / ManLang)*
+- Depends on Paper 3 + bytecode VM
+- Profile export format (visit counts, type observations, branch frequencies)
+- Bytecode compiler consuming profile: inlining, reordering, branch layout
+- JIT consuming profile: inline caches, type specialisation, register hints
+- Key claim: self-improving profiling — the profiler bootstraps its own performance
+
+**Paper 1** — Language design: emergence from one primitive *(Onward! Essays / DLS)*
+- Depends on homoiconicity (`parse`/`eval`) being implemented
+- Depends on unified dispatch (dot/infix/UFCS) being implemented
+- The emergence chain: one primitive → many mechanisms at no additional conceptual cost
+
+**Paper 2** — Theory: hash/feature-structure rewriting *(LICS / FSCD / workshop)*
+- Speculative; pursue in parallel with Paper 1
+- Requires: confluence proofs, termination conditions, expressiveness results
+- May produce a formal foundation beneath the practical contributions of Papers 1 and 3/4
+
+See `planning/PAPER.md` for full details on each paper.
+
+
+### Cache-aware AST layout
+- (COULD, LATER, MEDIUM, LARGE)
+- PENDING
+
+**Motivation**
+
+A tree-walking interpreter's main bottleneck is pointer chasing — each node visit follows pointers to children scattered randomly in heap memory. An L1 cache hit costs ~4 cycles; a main memory access costs ~200 cycles. If the hot subgraph of the AST fits in L1/L2 cache, the interpreter runs significantly faster with no change to the execution model.
+
+**The mechanism**
+
+*Step 1 — query cache sizes at runtime*
+
+On Linux: `/sys/devices/system/cpu/cpu0/cache/index{0,1,2}/size`
+On macOS: `sysctl hw.l1icachesize hw.l2cachesize`
+
+Store L1 and L2 sizes in the interpreter at startup. No user configuration required.
+
+*Step 2 — switch to arena allocation at parse time*
+
+Currently AST nodes are individually heap-allocated `std::shared_ptr` objects — scattered in memory. Replace with a pool/arena allocator: all nodes packed into a contiguous slab. Node references become integer indices into the arena rather than pointers. This is the enabling change — reorganisation becomes array permutation rather than pointer surgery.
+
+*Step 3 — instrument the interpreter (trace phase)*
+
+Add a visit counter to each AST node (a single `uint32_t` in the node struct). Increment on every eval/exec call. Adds one integer increment per node visit — negligible overhead.
+
+*Step 4 — identify the hot subgraph*
+
+After a warmup period (configurable — e.g. first 1000 iterations of the main loop), sort nodes by visit count descending. The hot set is the top-N nodes whose total size fits within L2 (or L1 for the very hottest).
+
+*Step 5 — compact hot nodes*
+
+Copy hot nodes to the front of a new arena, preserving child index relationships. Update the interpreter's root pointer. Cold nodes remain in place at the back. Future allocations go into the cold region.
+
+*Step 6 — re-run*
+
+The interpreter continues unchanged. Hot path node visits now hit cache; cold path visits still miss but are rare by definition.
+
+**Why not just use a bytecode VM?**
+
+A bytecode VM gets cache locality for free — instructions are a flat array. But compiling to bytecode discards the AST, losing homoiconicity, live AST transformation, and debuggability. Cache-aware layout gets similar locality improvements while the AST remains an AST — still inspectable, transformable, and self-describing.
+
+**Expected gains**
+
+For tight loops over a small AST subgraph (the common case in games, simulations, inner loops): 2–5× speedup over scattered allocation. Smaller gains for programs that touch large portions of the AST uniformly.
+
+**Relation to other work**
+
+| Technique | Relationship |
+|-----------|-------------|
+| AST flattening (Sampson) | Packs pointer-based AST nodes into contiguous arrays for ~1.5× speedup — static, not runtime-driven |
+| Self-optimising AST interpreters (Würthinger / Truffle) | Tree rewriting with type feedback to reduce dispatch overhead — structural, not layout |
+| Hot path B+-tree layout (VLDB 2023) | Runtime identification of hot access paths + contiguous layout — same concept, applied to database indexes not interpreters |
+| Profile-guided optimisation (PGO) | Same principle applied to machine code layout by compilers; this applies it to AST node layout |
+| Copying GC | Same compaction technique; different motivation (reclaim memory vs improve locality) |
+| JIT code layout (V8, LuaJIT) | Hot machine code placed contiguously; this does the same for AST nodes |
+
+Research confirms no existing tree-walking interpreter applies runtime cache-size-aware hot subgraph compaction. The idea sits in a gap between three separate bodies of work that have not been combined. Potentially publishable as a standalone systems contribution.
+
+**Performance ladder**
+
+```
+Tree-walking, scattered AST (current)
+    ↓
+Tree-walking, cache-aware AST layout      ← this item
+    ↓
+Bytecode VM
+    ↓
+JIT
+```
 
 
 ### Tail-call optimisation 

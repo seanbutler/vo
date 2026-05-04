@@ -10,5 +10,5 @@ ROWS   : int    = vtk.get_height()
 COLS_F : double = 0.0 + COLS
 ROWS_F : double = 0.0 + ROWS
 
-MOVE_SPEED : double = 0.05
-ROT_SPEED  : double = 0.04
+MOVE_SPEED : double = 0.1
+ROT_SPEED  : double = 0.1
