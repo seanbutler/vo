@@ -9,13 +9,13 @@ All changes are in `interp/src/lexer/lexer.cpp` unless noted.
 
 ---
 
-## Phase 1 Update Lexer to Accept Unicode
+## DONE Phase 1 Update Lexer to Accept Unicode
 
-### Phase 1 Step 1 — Branch
+### DONE Phase 1 Step 1 — Branch
 
 move to a new branch "feature/unicode/core-lexer-change"
 
-### Phase 1 Step 2 — Core lexer change (minimal viable)
+### DONE Phase 1 Step 2 — Core lexer change (minimal viable)
 
 **Two lines changed:**
 
@@ -32,23 +32,20 @@ High bytes are passed through as opaque `std::string` bytes. The interpreter
 stores and compares identifiers byte-for-byte, so this is sufficient for
 basic emoji use.
 
-### Phase 1 Step 3 - Test Coverage
+### DONE Phase 1 Step 3 - Test Coverage
 
 - write tests or extend the existing tests so that they work with ascii as well as unicode identifiers.
 
 
-### Phase 1 Step 4 - Merge and Update Documentation
+### DONE  Phase 1 Step 4 - Merge and Update Documentation
 
 - update documentation and examples to include unicode identifiers in at least one case. 
 - add a paragraph to the README to explain rationale 
 - once tests are passed merge into main
 
-
-
-
 ---
 
-## Phase 2 — Reject bidirectional control characters (Trojan Source)
+## PENDING Phase 2 — Reject bidirectional control characters (Trojan Source)
 
 **CVE-2021-42574**: bidi control chars make source look different from what
 it does when rendered. Reject them in both identifiers and string literals.
@@ -72,7 +69,7 @@ throw a `LexError` naming the character.
 
 ---
 
-## Phase 3 - Reject zero-width characters in identifiers
+## PENDING Phase 3 - Reject zero-width characters in identifiers
 
 Zero-width chars embedded in identifiers make two visually identical names
 actually distinct — a silent, hard-to-debug bug vector.
@@ -90,7 +87,7 @@ Detect in `read_word()` continuation loop; throw `LexError` with the name.
 
 ---
 
-## Phase 4 — Document homoglyph risk (no code change)
+## PENDING Phase 4 — Document homoglyph risk (no code change)
 
 Visually similar characters from different Unicode blocks (e.g. Cyrillic `а`
 U+0430 vs Latin `a` U+0061) are treated as **distinct** identifiers because
@@ -107,7 +104,7 @@ not worth the complexity for VO.
 
 ---
 
-## Phase 5 — NFC normalization of identifiers at lex time
+## PENDING Phase 5 — NFC normalization of identifiers at lex time
 
 Without normalization, decomposed and precomposed forms of the same character
 (e.g. `e` + combining accent U+0301 vs precomposed `é` U+00E9) produce
@@ -127,7 +124,7 @@ Apply NFC normalization to the `buf` string at the end of `read_word()`.
 
 ---
 
-## Phase 6 — Fix column counter for multi-byte characters
+## PENDING Phase 6 — Fix column counter for multi-byte characters
 
 `advance()` currently increments `col_` by 1 per byte, so error positions
 like `L5:3` are wrong (byte offset, not visual column) whenever multi-byte
