@@ -1,0 +1,68 @@
+#!/bin/sh
+# vopack — bundle a VO program + interpreter into a single self-contained executable
+set -e
+
+usage() {
+    cat >&2 <<EOF
+Usage: vopack -s <source-dir> -b <vo-binary> -o <output>
+
+  -s  directory containing main.vo (and any libs / assets)
+  -b  path to the vo interpreter binary to bundle
+  -o  output file name
+
+Example:
+  vopack -s examples/wolf -b build/vo -o wolf
+  ./wolf
+EOF
+    exit 1
+}
+
+SOURCE_DIR="" VO_BIN="" OUTPUT=""
+
+while getopts "s:b:o:h" opt; do
+    case $opt in
+        s) SOURCE_DIR="$OPTARG" ;;
+        b) VO_BIN="$OPTARG"    ;;
+        o) OUTPUT="$OPTARG"    ;;
+        *) usage ;;
+    esac
+done
+
+[ -z "$SOURCE_DIR" ] && { echo "vopack: -s required" >&2; usage; }
+[ -z "$VO_BIN"     ] && { echo "vopack: -b required" >&2; usage; }
+[ -z "$OUTPUT"     ] && { echo "vopack: -o required" >&2; usage; }
+
+[ -f "$SOURCE_DIR/main.vo" ] || { echo "vopack: $SOURCE_DIR/main.vo not found" >&2; exit 1; }
+[ -f "$VO_BIN"             ] || { echo "vopack: binary not found: $VO_BIN"     >&2; exit 1; }
+
+command -v zip  >/dev/null 2>&1 || { echo "vopack: 'zip' not found in PATH"   >&2; exit 1; }
+command -v unzip>/dev/null 2>&1 || { echo "vopack: 'unzip' not found in PATH" >&2; exit 1; }
+
+WORK=$(mktemp -d)
+trap 'rm -rf "$WORK"' EXIT
+
+# Stage: sources + interpreter
+cp -r "$SOURCE_DIR/." "$WORK/stage/"
+cp "$VO_BIN" "$WORK/stage/vo"
+
+# Build ZIP from the staged tree
+(cd "$WORK/stage" && zip -qr "$WORK/bundle.zip" . -x "*.DS_Store")
+
+# Self-extracting launcher header (must end with `exit` before ZIP bytes)
+cat > "$WORK/header.sh" << 'LAUNCHER'
+#!/bin/sh
+DIR=$(mktemp -d)
+cleanup() { rm -rf "$DIR"; }
+trap cleanup EXIT INT TERM
+unzip -q "$0" -d "$DIR" 2>/dev/null
+chmod +x "$DIR/vo"
+cd "$DIR"
+./vo main.vo "$@"
+exit $?
+LAUNCHER
+
+cat "$WORK/header.sh" "$WORK/bundle.zip" > "$OUTPUT"
+chmod +x "$OUTPUT"
+
+SIZE=$(wc -c < "$WORK/bundle.zip")
+echo "Created $OUTPUT (bundle: ${SIZE} bytes)"
