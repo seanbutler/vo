@@ -1,6 +1,5 @@
 // C stdio starter set (16 functions)
 // Descriptor-only metadata for future FFI binding/codegen.
-// Usage idea: @ "lib/cstdio.vo"
 
 cstdio = {
     lib : string = "libc.so.6"

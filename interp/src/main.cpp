@@ -19,7 +19,7 @@ static void run(const std::string& source, lang::Interpreter& interp, bool trace
     auto tokens = lexer.tokenize();
 
     if (trace) {
-        std::cout << "══ TOKENS ══════════════════════════════════════════\n";
+        std::cout << "=== TOKENS ===\n";
         for (auto& t : tokens)
             std::cout << "  [" << t.line << ":" << t.col << "] "
                       << static_cast<int>(t.type) << "  " << t.lexeme << "\n";
@@ -48,7 +48,9 @@ int main(int argc, char** argv) {
 
         lang::Interpreter interp(trace);
 
-        std::cout << "══ OUTPUT ══════════════════════════════════════════\n";
+        if (trace) {
+            std::cout << "=== OUTPUT ===\n";
+        }   
         run(read_file(file), interp, trace);
     }
     catch (const std::exception& e) {

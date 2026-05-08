@@ -1,0 +1,7 @@
+@ "./lib/stdio.vo"
+
+Main = () {
+    printf_s("%s", "Hello World\n")
+}
+
+Main()
