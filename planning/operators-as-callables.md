@@ -39,6 +39,25 @@ The current parser encodes precedence structurally (multiplicative ladder sits a
 
 **Preferred: adopt no precedence, require explicit parentheses.**
 
+## Motivating example — `!` (logical NOT)
+
+`!` is currently a C++ primitive in the interpreter (`interpreter.cpp:333`). Once prefix operator dispatch is in place, it becomes a pre-bound VO callable:
+
+```vo
+! = @(a) { ? a { 0 } { 1 } }
+```
+
+The C++ case is deleted. `! x` desugars to `!(x)` at parse time, which looks up `!` in the environment like any other name. `logic.not` can then simply alias it:
+
+```vo
+logic = {
+    not = !       // ! is just a callable value
+    ...
+}
+```
+
+This is the concrete first target for the operator dispatch mechanism — a clean, testable removal of one hardcoded interpreter primitive.
+
 ## Steps
 
 **Step 1 — infix rewrite for named functions (prerequisite)**
