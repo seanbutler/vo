@@ -1,6 +1,6 @@
 # VO
 
-Vo is a small, expression-oriented programming language. The name comes from *lingvo* — Esperanto for *language*.
+Vo is a small, expression-oriented programming language. The name comes from *lingvo* - Esperanto for *language*.
 
 At its core, Vo provides a  one universal data structure: the **hash**. Objects, modules, namespaces, prototypes, and constructors are all hashes. There are no classes, no arrays — only hashes, callables, loops, and recursion.
 
@@ -24,13 +24,13 @@ café : int = 42
 point = { x : int = 0  y : int = 0 }
 
 // callable (function)
-add = (a : int, b : int) { a + b }
+add = @(a : int, b : int) { a + b }
 
 // hash with constructor
 Node = {
     value : int = 0
     next         = {}
-    () = (v : int, n) {
+    () = @(v : int, n) {
         self.value := v
         self.next  := n
     }
@@ -38,11 +38,11 @@ Node = {
 node = Node(42, {})           // clones Node, calls ()
 
 // inheritance via _ delegation  (stdlib subtype helper)
-@ "lib/stdlib.vo"
+# "lib/stdlib.vo"
 Animal = {
     sound : string = "..."
-    speak  = () { self.sound }
-    () = (s : string) { self.sound := s }
+    speak  = @() { self.sound }
+    () = @(s : string) { self.sound := s }
 }
 Dog = subtype(Animal, { sound : string = "Woof" })
 d = Dog("Rex")                // constructor found through _ chain
@@ -51,8 +51,8 @@ d.speak()                     // method inherited; self = d
 // private slots — _ prefix hides from >>, merge, clone, and display
 Counter = {
     _count : int = 0
-    inc    = () { self._count := self._count + 1 }
-    value  = () { self._count }
+    inc    = @() { self._count := self._count + 1 }
+    value  = @() { self._count }
 }
 
 // conditional expression (else branch optional, returns nil if absent)
@@ -80,10 +80,10 @@ point.x
 point.(key_expr)              // dynamic key
 
 // hash iteration  (skips _ prefixed and () slots)
-data >> (k, v) { printf_s("%s\n", k) }
+data >> @(k, v) { printf_s("%s\n", k) }
 
 // import
-@ "lib/stdio.vo"
+# "lib/stdio.vo"
 
 // foreign function binding
 spec = { lib : string = "libc.so.6"  abi : string = "c"
@@ -107,7 +107,7 @@ char_at("hello", 1)       // → "e"  (single-character string at index)
 - **Private slots** — any slot whose name begins with `_` is hidden from `>>`, `merge`, `clone`, and display; directly accessible by name
 - **Loop primitive** — `~{ }` is an infinite loop block; `\` escapes it (lexically scoped, parse-time enforced); `!` is logical NOT
 - **C FFI via `$$`** — bind and call C library functions directly
-- **No reserved words** — only symbols; `@` import, `?` conditional, `~{ }` loop, `\` break, `!` not, `>>` iteration, `$$` FFI
+- **No reserved words** — only symbols; `#` import, `@` callable literal, `?` conditional, `~{ }` loop, `\` break, `!` not, `>>` iteration, `$$` FFI
 - **Unicode identifiers** — any UTF-8 byte sequence is a valid identifier name, including emoji and extended-ASCII glyphs (e.g. `🐺 = "wolf"`, `speed🚀 : int := 0`, `café : int = 42`)
 - **Built-in functions** — `ifloor(x)` truncates a double to int; `char_at(s, i)` returns the single-character string at index `i`
 
@@ -129,7 +129,7 @@ cmake --build build
 ## Example — Sieve of Eratosthenes
 
 ```
-@ "lib/stdio.vo"
+# "lib/stdio.vo"
 
 empty = { is_empty : int = 1 }
 
@@ -137,14 +137,14 @@ Node = {
     is_empty : int = 0
     value    : int = 0
     next            = empty
-    () = (v : int, n) { self.value := v  self.next := n }
+    () = @(v : int, n) { self.value := v  self.next := n }
 }
 
-range  = (lo : int, hi : int) {
+range  = @(lo : int, hi : int) {
     ? lo > hi { empty } { Node(lo, range(lo + 1, hi)) }
 }
 
-filter = (list, pred) {
+filter = @(list, pred) {
     ? list.is_empty { empty } {
         ? pred(list.value) {
             Node(list.value, filter(list.next, pred))
@@ -154,14 +154,14 @@ filter = (list, pred) {
     }
 }
 
-sieve  = (list) {
+sieve  = @(list) {
     ? list.is_empty { empty } {
         p : int = list.value
-        Node(p, sieve(filter(list.next, (n : int) { n % p != 0 })))
+        Node(p, sieve(filter(list.next, @(n : int) { n % p != 0 })))
     }
 }
 
-print_list = (list) {
+print_list = @(list) {
     ? list.is_empty { } {
         printf_i("%d\n", list.value)
         print_list(list.next)
@@ -174,14 +174,14 @@ print_list(sieve(range(2, 50)))
 ## Example — Prototype OOP with inheritance
 
 ```
-@ "lib/stdio.vo"
-@ "lib/stdlib.vo"
+# "lib/stdio.vo"
+# "lib/stdlib.vo"
 
 // base — constructor + method
 Animal = {
     sound : string = "..."
-    speak  = () { printf_s("%s\n", self.sound) }
-    () = (s : string) { self.sound := s }
+    speak  = @() { printf_s("%s\n", self.sound) }
+    () = @(s : string) { self.sound := s }
 }
 
 // subtype inherits constructor and speak through _ chain
@@ -190,7 +190,7 @@ Dog = subtype(Animal, { sound : string = "Woof" })
 // subtype with method override
 Cat = subtype(Animal, {
     sound : string = "Meow"
-    speak  = () { printf_s("Cat says: %s\n", self.sound) }
+    speak  = @() { printf_s("Cat says: %s\n", self.sound) }
 })
 
 // multi-level inheritance
@@ -208,7 +208,7 @@ Structs — hashes with no `()` — inherit methods the same way:
 Point = {
     x : int = 0
     y : int = 0
-    dot = (other) { self.x * other.x + self.y * other.y }
+    dot = @(other) { self.x * other.x + self.y * other.y }
 }
 
 Point3 = subtype(Point, { z : int = 0 })
@@ -223,8 +223,8 @@ Private state with `_` prefix — hidden from `>>`, `merge`, and `clone`:
 ```
 Counter = {
     _count : int = 0
-    inc    = () { self._count := self._count + 1 }
-    value  = () { self._count }
+    inc    = @() { self._count := self._count + 1 }
+    value  = @() { self._count }
 }
 
 c = Counter()
@@ -245,32 +245,32 @@ Two library hashes, each importable independently. No language changes required.
 ```
 // lib/logic.vo
 logic = {
-    not = (x)    { !x }
-    and = (a, b) { ? a() { b() } { 0 } }
-    or  = (a, b) { ? a() { 1 }  { b() } }
+    not = @(x)    { !x }
+    and = @(a, b) { ? a() { b() } { 0 } }
+    or  = @(a, b) { ? a() { 1 }  { b() } }
 }
 
 // lib/loops.vo
 loops = {
-    while    = (cond, body) { ~{ ? !cond() { \ }  body() } }
-    do_while = (body, cond) { ~{ body()  ? !cond() { \ } } }
-    for      = (lo : int, hi : int, body) {
+    while    = @(cond, body) { ~{ ? !cond() { \ }  body() } }
+    do_while = @(body, cond) { ~{ body()  ? !cond() { \ } } }
+    for      = @(lo : int, hi : int, body) {
         i : int := lo
         ~{ ? i >= hi { \ }  body(i)  i := i + 1 }
     }
 }
 
-@ "lib/logic.vo"
-@ "lib/loops.vo"
+# "lib/logic.vo"
+# "lib/loops.vo"
 
 ? logic.not(0) { printf_s("%s\n", "not(0) is true") }
-? logic.and(() { 1 }, () { 1 }) { printf_s("%s\n", "1 and 1") }
+? logic.and(@() { 1 }, @() { 1 }) { printf_s("%s\n", "1 and 1") }
 
 i : int := 1
-loops.while(() { i <= 5 }, () { printf_i("%d\n", i)  i := i + 1 })
+loops.while(@() { i <= 5 }, @() { printf_i("%d\n", i)  i := i + 1 })
 
 total : int := 0
-loops.for(1, 11, (n : int) { total := total + n })
+loops.for(1, 11, @(n : int) { total := total + n })
 printf_i("sum 1..10 = %d\n", total)    // 55
 ```
 
@@ -279,11 +279,11 @@ printf_i("sum 1..10 = %d\n", total)    // 55
 `lib/loops.vo` provides ascending, stepping, and descending for loops built on `~{ }`.
 
 ```
-@ "lib/loops.vo"
+# "lib/loops.vo"
 
-loops.for(1, 6, (i : int) { printf_i("%d\n", i) })              // 1 2 3 4 5
-loops.for_step(0, 11, 2, (i : int) { printf_i("%d\n", i) })     // 0 2 4 6 8 10
-loops.for_down(1, 6, (i : int) { printf_i("%d\n", i) })         // 5 4 3 2 1
+loops.for(1, 6, @(i : int) { printf_i("%d\n", i) })              // 1 2 3 4 5
+loops.for_step(0, 11, 2, @(i : int) { printf_i("%d\n", i) })     // 0 2 4 6 8 10
+loops.for_down(1, 6, @(i : int) { printf_i("%d\n", i) })         // 5 4 3 2 1
 ```
 
 Full source: `interp/alias.vo`
@@ -383,4 +383,3 @@ VO's `$$` takes a hash descriptor — the binding spec is itself a first-class v
 | **Wren** | Foreign method binding via descriptors |
 | **Python ctypes** | Spec-as-data approach to C binding |
 | **Zig** | `@cImport` — compiler-level C interop via declarations |
-
