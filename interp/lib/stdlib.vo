@@ -1,6 +1,9 @@
 // Standard library (optional include with @ "lib/stdlib.vo").
 // All functions are expressed in terms of core language operators.
 
+// TODO - need to find a scope for this perhaps hash? perhaps merge with 
+
+
 // ----- clone ---------------------------------------------------------------
 // Return a shallow copy of a hash.
 

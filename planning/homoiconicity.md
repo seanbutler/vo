@@ -1,6 +1,7 @@
 ---
 status: PENDING
 priority: (COULD, LATER, HIGH, BROAD)
+depends: ast-api.md (parse/eval are thin wrappers over the construction API)
 ---
 
 # Homoiconicity — `parse` and `eval` builtins

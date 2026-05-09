@@ -4,6 +4,8 @@
 // This file defines convention helpers for shaping module interfaces.
 // It is intentionally policy-oriented and layered on top of core language features.
 
+// TODO - need to find a scope for this perhaps hash?
+
 // ----- has_key -------------------------------------------------------------
 // Return 1 if obj has member key, else 0.
 

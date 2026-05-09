@@ -18,17 +18,20 @@ Hard dependencies ( -> means "must be done before" ):
 
 [infix-syntax](infix-syntax) -> [operators-as-callables](operators-as-callables) -> [unified-dispatch](unified-dispatch)
 
-[callable-sigil](callable-sigil)
+[callable-sigil](callable-sigil) -> [hash-arrays](hash-arrays) (bracket syntax settled after sigil swap)
 
 
 
 **Publication chain**
 
 
-visitor-dispatch ⟶  cache-aware-layout          -> Paper 3
-                                                -> Paper 4  (also needs bytecode VM)
-unified-dispatch + homoiconicity                -> Paper 1
-Paper 1 || Paper 3/4                            -> Paper 2  (speculative)
+    visitor-dispatch ->  cache-aware-layout          -> Paper 3
+                                                    -> Paper 4  (also needs bytecode VM)
+
+
+    visitor-dispatch -> ast-api -> homoiconicity
+    unified-dispatch + homoiconicity                -> Paper 1
+    Paper 1 || Paper 3/4                            -> Paper 2  (speculative)
 
 
 
@@ -43,7 +46,19 @@ Paper 1 || Paper 3/4                            -> Paper 2  (speculative)
 
 
 Items with no upstream dependencies (safe to start anytime):
-`drop-commas`, `lazy-boolean`, `immutability`, `stdio-design`, `sdl3-binding`, `ffi-builtins`, `runtime-controls`, `tail-call`, `profiling`, `visitor-dispatch`, `code-size`
+
+- "drop-commas"
+- "lazy-boolean"
+- "immutability"
+- "stdio-design"
+- "sdl3-binding"
+- "ffi-builtins"
+- "runtime-controls"
+- "tail-call"
+- "profiling"
+- "visitor-dispatch"
+- "code-size"
+- "lib-management"
 
 ---
 
@@ -53,14 +68,16 @@ Items with no upstream dependencies (safe to start anytime):
 
 | Item | Priority | File |
 |------|----------|------|
-| Swap `@`/`#` — callable sigil + import sigil | MUST, SOONER, LOW, BROAD | [callable-sigil.md](callable-sigil.md) |
+| Swap "@`/`#` — callable sigil + import sigil | MUST, SOONER, LOW, BROAD | [callable-sigil.md](callable-sigil.md) |
+| Hash arrays — insertion order + bracket keys | MUST, SOONER, MEDIUM, BROAD | [hash-arrays.md](hash-arrays.md) |
 | Drop comma from parameter lists | MUST, SOONER, LOW, BROAD | [drop-commas.md](drop-commas.md) |
 | Lazy boolean operators `&` and `\|` | MUST, SOONER, SMALL, BROAD | [lazy-boolean.md](lazy-boolean.md) |
 | User-defined infix call syntax (backtick) | COULD, SOONER, SMALL, BROAD | [infix-syntax.md](infix-syntax.md) |
 | Localisation — three-layer architecture | MUST, SOONER, HIGH, BROAD | [localisation.md](localisation.md) |
 | Operators as first-class callables | MUST, LATER, HIGH, BROAD | [operators-as-callables.md](operators-as-callables.md) |
 | Unified dot / infix / UFCS dispatch | MUST, LATER, HIGH, BROAD | [unified-dispatch.md](unified-dispatch.md) |
-| Homoiconicity — `parse` and `eval` builtins | COULD, LATER, HIGH, BROAD | [homoiconicity.md](homoiconicity.md) |
+| AST construction API — node builders, env manipulation, eval | MUST, LATER, HIGH, BROAD | [ast-api.md](ast-api.md) |
+| Homoiconicity — `parse` and `eval` (builds on AST API) | COULD, LATER, HIGH, BROAD | [homoiconicity.md](homoiconicity.md) |
 | Enforce immutability at runtime | MUST, LATER, LOW, BROAD | [immutability.md](immutability.md) |
 | Output / stdio design | MUST, LATER | [stdio-design.md](stdio-design.md) |
 
@@ -68,6 +85,7 @@ Items with no upstream dependencies (safe to start anytime):
 
 | Item | Priority | File |
 |------|----------|------|
+| Library management — path resolution, import guards, search path | MUST, SOONER, MEDIUM, BROAD | [lib-management.md](lib-management.md) |
 | SDL3 binding via C shim | MUST, SOONER, LOW, HIGH | [sdl3-binding.md](sdl3-binding.md) |
 | Replace hardcoded NativeCallable builtins with FFI | COULD, SOONER, MEDIUM, BROAD | [ffi-builtins.md](ffi-builtins.md) |
 | Interpreter runtime controls | COULD, SOONER, SMALL, BROAD | [runtime-controls.md](runtime-controls.md) |

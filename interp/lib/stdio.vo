@@ -1,6 +1,9 @@
 @ "lib/cstdio.vo"
 @ "lib/ffi.vo"
 
+// TODO - find a scope with a name for this file
+// TODO - rename the file and refactor where its used
+
 // printf("%s", str) — print a string, no implicit newline
 _spec_printf_s = {
     lib    : string = cstdio.lib

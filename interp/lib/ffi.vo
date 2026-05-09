@@ -4,6 +4,8 @@
 // $$ binds one fully prepared foreign-function spec.
 // bind_lib keeps library iteration and spec shaping in lang.
 
+// TODO - wrap this in a ffi namespace
+
 bind_one = (lib : string, abi : string, sig) {
     spec = {
         lib : string = lib
