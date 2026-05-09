@@ -1,7 +1,7 @@
 # "./lib/stdio.vo"
 
-Main = @() {
-    printf_s("%s", "Hello World\n")
+hello = @(who:string) {
+    printf_s("Hello, %s!\n", who)
 }
 
-Main()
+hello("World")
