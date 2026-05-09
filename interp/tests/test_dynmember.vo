@@ -1,4 +1,4 @@
-@ "tests/color.vo"
+# "tests/color.vo"
 
 ok : int := 1
 

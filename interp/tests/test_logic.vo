@@ -1,5 +1,5 @@
-@ "lib/logic.vo"
-@ "tests/color.vo"
+# "lib/logic.vo"
+# "tests/color.vo"
 
 ok : int := 1
 
@@ -49,7 +49,7 @@ ok : int := 1
 ? logic.nand(1, 1) == logic.or(logic.not(1), logic.not(1)) { } { ok := 0 }
 
 // derived: xor from nand chain — xor(a,b) == nand(nand(a,nand(a,b)),nand(b,nand(a,b)))
-xor_from_nand = (a : int, b : int) {
+xor_from_nand = @(a : int, b : int) {
     n  : int = logic.nand(a, b)
     logic.nand(logic.nand(a, n), logic.nand(b, n))
 }

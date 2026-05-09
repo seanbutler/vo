@@ -1,4 +1,4 @@
-@ "lib/vtkit.vo"
+# "lib/vtkit.vo"
 
 W : int = 80
 H : int = 24

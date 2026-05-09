@@ -1,7 +1,7 @@
-@ "lib/vtkit.vo"
-@ "lib/cmath.vo"
-@ "lib/ffi.vo"
-@ "lib/loops.vo"
+# "lib/vtkit.vo"
+# "lib/cmath.vo"
+# "lib/ffi.vo"
+# "lib/loops.vo"
 
 math = bind_lib(cmath)
 

@@ -31,10 +31,6 @@ private:
     bool         match(TokenType t);
     [[noreturn]] void error(const std::string& msg) const;
 
-    // Scan ahead to decide if '(' starts a callable or a grouped expression.
-    // Returns true if the matching ')' is immediately followed by '{'.
-    bool looks_like_callable() const;
-
     // ── statement parsers ─────────────────────────────────────────────────────
     ast::StmtPtr             parse_stmt();
     std::vector<ast::StmtPtr> parse_block_body();   // stmts until '}'

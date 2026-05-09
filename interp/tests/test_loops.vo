@@ -1,80 +1,80 @@
-@ "lib/loops.vo"
-@ "tests/color.vo"
+# "lib/loops.vo"
+# "tests/color.vo"
 
 ok : int := 1
 
 // while: counts 1..5
 i : int := 1
 loops.while(
-    () { i <= 5 },
-    () { i := i + 1 }
+    @() { i <= 5 },
+    @() { i := i + 1 }
 )
 ? i == 6 { } { ok := 0 }
 
 // while: body never runs when condition starts false
 never : int := 0
-loops.while(() { 0 }, () { never := 1 })
+loops.while(@() { 0 }, @() { never := 1 })
 ? never == 0 { } { ok := 0 }
 
 // do_while: body runs at least once even when condition starts false
 ran_once : int := 0
 loops.do_while(
-    () { ran_once := 1 },
-    () { 0 }
+    @() { ran_once := 1 },
+    @() { 0 }
 )
 ? ran_once == 1 { } { ok := 0 }
 
 // do_while: counts up to 3
 j : int := 0
 loops.do_while(
-    () { j := j + 1 },
-    () { j < 3 }
+    @() { j := j + 1 },
+    @() { j < 3 }
 )
 ? j == 3 { } { ok := 0 }
 
 // for: sum 1..10
 total : int := 0
-loops.for(1, 11, (n : int) { total := total + n })
+loops.for(1, 11, @(n : int) { total := total + n })
 ? total == 55 { } { ok := 0 }
 
 // for: body never runs when lo >= hi
 empty_ran : int := 0
-loops.for(5, 5, (n : int) { empty_ran := 1 })
+loops.for(5, 5, @(n : int) { empty_ran := 1 })
 ? empty_ran == 0 { } { ok := 0 }
 
 // for: single iteration
 single : int := 0
-loops.for(7, 8, (n : int) { single := n })
+loops.for(7, 8, @(n : int) { single := n })
 ? single == 7 { } { ok := 0 }
 
 // for_step: evens 0..8 — sum should be 0+2+4+6+8 = 20
 step_sum : int := 0
-loops.for_step(0, 9, 2, (n : int) { step_sum := step_sum + n })
+loops.for_step(0, 9, 2, @(n : int) { step_sum := step_sum + n })
 ? step_sum == 20 { } { ok := 0 }
 
 // for_step: step larger than range — single iteration
 step_single : int := 0
-loops.for_step(3, 6, 10, (n : int) { step_single := n })
+loops.for_step(3, 6, 10, @(n : int) { step_single := n })
 ? step_single == 3 { } { ok := 0 }
 
 // for_step: empty range
 step_empty : int := 0
-loops.for_step(5, 5, 1, (n : int) { step_empty := 1 })
+loops.for_step(5, 5, 1, @(n : int) { step_empty := 1 })
 ? step_empty == 0 { } { ok := 0 }
 
 // for_down: 5 down to 1 — sum should be 5+4+3+2+1 = 15
 down_sum : int := 0
-loops.for_down(1, 6, (n : int) { down_sum := down_sum + n })
+loops.for_down(1, 6, @(n : int) { down_sum := down_sum + n })
 ? down_sum == 15 { } { ok := 0 }
 
 // for_down: single element
 down_single : int := 0
-loops.for_down(4, 5, (n : int) { down_single := n })
+loops.for_down(4, 5, @(n : int) { down_single := n })
 ? down_single == 4 { } { ok := 0 }
 
 // for_down: empty range
 down_empty : int := 0
-loops.for_down(5, 5, (n : int) { down_empty := 1 })
+loops.for_down(5, 5, @(n : int) { down_empty := 1 })
 ? down_empty == 0 { } { ok := 0 }
 
 loops_test_ok = ok

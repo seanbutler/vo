@@ -1,5 +1,5 @@
-@ "tests/color.vo"
-@ "lib/stdlib.vo"
+# "tests/color.vo"
+# "lib/stdlib.vo"
 
 ok : int := 1
 
@@ -13,7 +13,7 @@ obj = { x : int = 1  _hidden : int = 99  _count : int = 0 }
 // ----- _-prefixed slots are invisible to >> -----
 
 visible : int := 0
-obj >> (k, v) { ? k == "_hidden" { visible := 1 } { } }
+obj >> @(k, v) { ? k == "_hidden" { visible := 1 } { } }
 ? visible == 0 { } { ok := 0 }
 
 // has() uses >> so private slots are not found
@@ -45,8 +45,8 @@ copied = clone(src)
 
 Counter = {
     _count : int = 0
-    inc   = () { self._count := self._count + 1 }
-    value = () { self._count }
+    inc   = @() { self._count := self._count + 1 }
+    value = @() { self._count }
 }
 
 c = Counter()
@@ -58,7 +58,7 @@ c.inc()
 
 // ----- _ delegation still works -----
 
-Base   = { greet = () { "hello" } }
+Base   = { greet = @() { "hello" } }
 Child  = subtype(Base, { x : int = 1 })
 ch     = Child()
 

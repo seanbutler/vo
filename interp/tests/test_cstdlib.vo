@@ -1,6 +1,6 @@
-@ "lib/cstdlib.vo"
-@ "lib/ffi.vo"
-@ "tests/color.vo"
+# "lib/cstdlib.vo"
+# "lib/ffi.vo"
+# "tests/color.vo"
 
 ok : int := 1
 

@@ -1,4 +1,4 @@
-@ "./examples/wolf/map.vo"
+# "./examples/wolf/map.vo"
 
 
 // Player state and movement.
@@ -13,7 +13,7 @@ Player = {
     plane_y : double = 0.66   // length 0.66 gives ~66 degree FOV
 
     // Move forward (fwd=1) or backward (fwd=-1), with wall collision.
-    move = (fwd : int) {
+    move = @(fwd : int) {
         spd : double = ? fwd == 1 { MOVE_SPEED } { -MOVE_SPEED }
         nx  : double = self.pos_x + self.dir_x * spd
         ny  : double = self.pos_y + self.dir_y * spd
@@ -22,7 +22,7 @@ Player = {
     }
 
     // Rotate left (dir=1) or right (dir=-1).
-    turn = (dir : int) {
+    turn = @(dir : int) {
         a  : double = ? dir == 1 { ROT_SPEED } { -ROT_SPEED }
         c  : double = math.cos(a)
         s  : double = math.sin(a)

@@ -1,5 +1,5 @@
-@ "tests/color.vo"
-@ "lib/stdlib.vo"
+# "tests/color.vo"
+# "lib/stdlib.vo"
 
 ok : int := 1
 
@@ -8,7 +8,7 @@ ok : int := 1
 Point = {
     x : int = 0
     y : int = 0
-    dot = (other) { self.x * other.x + self.y * other.y }
+    dot = @(other) { self.x * other.x + self.y * other.y }
 }
 
 p = Point()
@@ -43,8 +43,8 @@ r.z := 5
 
 Animal = {
     sound : string = "..."
-    speak  = () { self.sound }
-    () = (s : string) { self.sound := s }
+    speak  = @() { self.sound }
+    () = @(s : string) { self.sound := s }
 }
 
 a = Animal("Grunt")
@@ -70,7 +70,7 @@ d2 = Dog("Buddy")
 
 Cat = subtype(Animal, {
     sound : string = "Meow"
-    speak  = () { "cat:" + self.sound }
+    speak  = @() { "cat:" + self.sound }
 })
 
 c = Cat("Whiskers")

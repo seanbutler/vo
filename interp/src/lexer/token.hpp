@@ -40,8 +40,11 @@ enum class TokenType {
     // Logical NOT
     Bang,      // !
 
+    // Callable sigil
+    At,        // @  (callable literal marker)
+
     // Module import
-    At,        // @
+    Hash,      // #
 
     Eof
 };

@@ -145,7 +145,8 @@ std::vector<Token> Lexer::tokenize() {
         case ')': tokens.push_back({ TokenType::RParen,  ")", ln, cl }); break;
         case '{': tokens.push_back({ TokenType::LBrace,  "{", ln, cl }); break;
         case '}': tokens.push_back({ TokenType::RBrace,  "}", ln, cl }); break;
-        case '@': tokens.push_back({ TokenType::At,      "@", ln, cl }); break;
+        case '@': tokens.push_back({ TokenType::At,   "@", ln, cl }); break;
+        case '#': tokens.push_back({ TokenType::Hash, "#", ln, cl }); break;
         case '?': tokens.push_back({ TokenType::Question,"?", ln, cl }); break;
         case '=':
             if (peek() == '=') { advance(); tokens.push_back({ TokenType::Eq,  "==", ln, cl }); }

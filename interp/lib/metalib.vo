@@ -1,5 +1,5 @@
 // Meta conventions library (optional include)
-// Usage: @ "lib/meta-lib.vo"
+// Usage: # "lib/meta-lib.vo"
 //
 // This file defines convention helpers for shaping module interfaces.
 // It is intentionally policy-oriented and layered on top of core language features.
@@ -7,9 +7,9 @@
 // ----- has_key -------------------------------------------------------------
 // Return 1 if obj has member key, else 0.
 
-has_key = (obj, key) {
+has_key = @(obj, key) {
     found : int := 0
-    obj >> (k, v) {
+    obj >> @(k, v) {
         ? k == key { found := 1 } { }
     }
     found
@@ -19,9 +19,9 @@ has_key = (obj, key) {
 // Keep only keys that are present in allowed_set.
 // allowed_set is a hash used as a set: { name = 1 other = 1 }
 
-pick = (src, allowed_set) {
+pick = @(src, allowed_set) {
     result = {}
-    src >> (k, v) {
+    src >> @(k, v) {
         ? has_key(allowed_set, k) { result.(k) := v } { }
     }
     result
@@ -31,9 +31,9 @@ pick = (src, allowed_set) {
 // Remove keys that are present in denied_set.
 // denied_set is a hash used as a set: { _debug = 1 _cache = 1 }
 
-omit = (src, denied_set) {
+omit = @(src, denied_set) {
     result = {}
-    src >> (k, v) {
+    src >> @(k, v) {
         ? has_key(denied_set, k) { } { result.(k) := v }
     }
     result
@@ -43,9 +43,9 @@ omit = (src, denied_set) {
 // Rename zero or more keys based on name_map.
 // name_map uses old->new mapping: { internal_name = "public_name" }
 
-remap = (src, name_map) {
+remap = @(src, name_map) {
     result = {}
-    src >> (k, v) {
+    src >> @(k, v) {
         ? has_key(name_map, k) {
             result.(name_map.(k)) := v
         } {
@@ -58,20 +58,20 @@ remap = (src, name_map) {
 // ----- public_api ----------------------------------------------------------
 // Convention: define your module hash, then omit a denied/private set.
 
-public_api = (module_obj, denied_set) {
+public_api = @(module_obj, denied_set) {
     omit(module_obj, denied_set)
 }
 
 // ----- exports_only --------------------------------------------------------
 // Convention: define your module hash, then pick explicit public names.
 
-exports_only = (module_obj, allowed_set) {
+exports_only = @(module_obj, allowed_set) {
     pick(module_obj, allowed_set)
 }
 
 // ----- exports_map ---------------------------------------------------------
 // Convention: explicit public set + optional renaming map.
 
-exports_map = (module_obj, allowed_set, name_map) {
+exports_map = @(module_obj, allowed_set, name_map) {
     remap(pick(module_obj, allowed_set), name_map)
 }

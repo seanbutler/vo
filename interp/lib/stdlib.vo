@@ -1,21 +1,21 @@
-// Standard library (optional include with @ "lib/stdlib.vo").
+// Standard library (optional include with # "lib/stdlib.vo").
 // All functions are expressed in terms of core language operators.
 
 // ----- clone ---------------------------------------------------------------
 // Return a shallow copy of a hash.
 
-clone = (src) {
+clone = @(src) {
     result = {}
-    src >> (k, v) { result.(k) := v }
+    src >> @(k, v) { result.(k) := v }
     result
 }
 
 // ----- without -------------------------------------------------------------
 // Return a copy of src with the named member removed.
 
-without = (src, excluded) {
+without = @(src, excluded) {
     result = {}
-    src >> (k, v) {
+    src >> @(k, v) {
         ? k != excluded { result.(k) := v } { }
     }
     result
@@ -24,9 +24,9 @@ without = (src, excluded) {
 // ----- rename --------------------------------------------------------------
 // Return a copy of src with old_key renamed to new_key.
 
-rename = (src, old_key, new_key) {
+rename = @(src, old_key, new_key) {
     result = {}
-    src >> (k, v) {
+    src >> @(k, v) {
         ? k == old_key { result.(new_key) := v }
                        { result.(k)       := v }
     }
@@ -36,19 +36,19 @@ rename = (src, old_key, new_key) {
 // ----- merge ---------------------------------------------------------------
 // Return a new hash with all members of a, overridden by members of b.
 
-merge = (a, b) {
+merge = @(a, b) {
     result = {}
-    a >> (k, v) { result.(k) := v }
-    b >> (k, v) { result.(k) := v }
+    a >> @(k, v) { result.(k) := v }
+    b >> @(k, v) { result.(k) := v }
     result
 }
 
 // ----- has -----------------------------------------------------------------
 // Return 1 if obj has a member with the given key, 0 otherwise.
 
-has = (obj, key) {
+has = @(obj, key) {
     found : int := 0
-    obj >> (k, v) {
+    obj >> @(k, v) {
         ? k == key { found := 1 } { }
     }
     found
@@ -57,18 +57,18 @@ has = (obj, key) {
 // ----- size ----------------------------------------------------------------
 // Return the number of members in a hash.
 
-size = (obj) {
+size = @(obj) {
     count : int := 0
-    obj >> (k, v) { count := count + 1 }
+    obj >> @(k, v) { count := count + 1 }
     count
 }
 
 // ----- filter_map ----------------------------------------------------------
 // Return a new hash containing only members for which pred(k, v) is truthy.
 
-filter_map = (src, pred) {
+filter_map = @(src, pred) {
     result = {}
-    src >> (k, v) {
+    src >> @(k, v) {
         ? pred(k, v) { result.(k) := v } { }
     }
     result
@@ -77,9 +77,9 @@ filter_map = (src, pred) {
 // ----- map_values ----------------------------------------------------------
 // Return a new hash with each value replaced by fn(v).
 
-map_values = (src, fn) {
+map_values = @(src, fn) {
     result = {}
-    src >> (k, v) { result.(k) := fn(v) }
+    src >> @(k, v) { result.(k) := fn(v) }
     result
 }
 
@@ -88,7 +88,7 @@ map_values = (src, fn) {
 // Slots in overrides shadow parent slots.  The () constructor is found
 // through the _ chain at call time — no explicit copying needed.
 
-subtype = (parent, overrides) {
+subtype = @(parent, overrides) {
     child = merge(parent, overrides)
     child._ := parent
     child
@@ -97,7 +97,7 @@ subtype = (parent, overrides) {
 // ----- almost_equal --------------------------------------------------------
 // Simple floating-point helper: absolute difference <= epsilon.
 
-almost_equal = (a : double, b : double, epsilon : double) {
+almost_equal = @(a : double, b : double, epsilon : double) {
     delta : double = a - b
     ? delta < 0.0 { -delta <= epsilon } { delta <= epsilon }
 }

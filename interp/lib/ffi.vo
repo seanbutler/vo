@@ -1,23 +1,25 @@
 // Foreign function binding helpers (optional include)
-// Usage: @ "lib/ffi.vo"
+// Usage: # "lib/ffi.vo"
 //
 // $$ binds one fully prepared foreign-function spec.
 // bind_lib keeps library iteration and spec shaping in lang.
 
-bind_one = (lib : string, abi : string, sig) {
+// TODO - wrap this in a ffi namespace
+
+bind_one = @(lib : string, abi : string, sig) {
     spec = {
         lib : string = lib
         abi : string = abi
     }
-    sig >> (k, v) {
+    sig >> @(k, v) {
         spec.(k) := v
     }
     $$ spec
 }
 
-bind_lib = (decl) {
+bind_lib = @(decl) {
     result = {}
-    decl.functions >> (name, sig) {
+    decl.functions >> @(name, sig) {
         result.(name) := bind_one(decl.lib, decl.abi, sig)
     }
     result

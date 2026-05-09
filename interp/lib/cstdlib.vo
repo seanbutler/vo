@@ -2,7 +2,7 @@
 
 // C stdlib practical starter set (12 functions)
 
-@ "lib/ffi.vo"
+# "lib/ffi.vo"
 
 cstdlib = {
     lib : string = "libc.so.6"
