@@ -1,8 +1,8 @@
 
-@ "lib/stdlib.vo"
+# "lib/stdlib.vo"
 
-@ "./examples/wolf/player.vo"
-@ "./examples/wolf/render.vo"
+# "./examples/wolf/player.vo"
+# "./examples/wolf/render.vo"
 
 
 vtk.raw_mode()

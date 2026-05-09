@@ -50,20 +50,6 @@ void Parser::error(const std::string& msg) const {
     throw ParseError(oss.str());
 }
 
-// Scan to the matching ')' and check whether '{' immediately follows.
-bool Parser::looks_like_callable() const {
-    int depth = 0;
-    for (size_t i = pos_; i < tokens_.size(); ++i) {
-        if (tokens_[i].type == TT::LParen)  ++depth;
-        if (tokens_[i].type == TT::RParen) {
-            if (--depth == 0)
-                return i + 1 < tokens_.size() &&
-                       tokens_[i + 1].type == TT::LBrace;
-        }
-        if (tokens_[i].type == TT::Eof) break;
-    }
-    return false;
-}
 
 // ── top level ─────────────────────────────────────────────────────────────────
 
@@ -77,8 +63,8 @@ Program Parser::parse() {
 // ── statements ────────────────────────────────────────────────────────────────
 
 StmtPtr Parser::parse_stmt() {
-    // Import:  '@' string
-    if (check(TT::At)) {
+    // Import:  '#' string
+    if (check(TT::Hash)) {
         advance();
         std::string path = expect(TT::String).string_value();
         return std::make_shared<ImportStmt>(std::move(path));
@@ -128,7 +114,7 @@ ExprPtr Parser::parse_iter() {
     auto left = parse_comparison();
     if (check(TT::GtGt)) {
         advance(); // consume '>>'
-        auto fn = parse_callable();
+        auto fn = parse_expr();  // '@(k,v){body}' is now a full expression
         return std::make_shared<IterExpr>(std::move(left), std::move(fn));
     }
     return left;
@@ -240,9 +226,11 @@ ExprPtr Parser::parse_primary() {
     if (check(TT::Question))
         return parse_cond();
 
-    // Callable:  '(' params ')' '{' body '}'
-    if (check(TT::LParen) && looks_like_callable())
+    // Callable:  '@' '(' params ')' '{' body '}'
+    if (check(TT::At)) {
+        advance(); // consume '@'
         return parse_callable();
+    }
 
     // Grouped expression:  '(' expr ')'
     if (check(TT::LParen)) {

@@ -1,23 +1,23 @@
-@ "tests/color.vo"
+# "tests/color.vo"
 
 ok : int := 1
 
 // >> visits every member
 h = { a : int = 1  b : int = 2  c : int = 3 }
 count : int := 0
-h >> (k, v) { count := count + 1 }
+h >> @(k, v) { count := count + 1 }
 ? count == 3 { } { ok := 0 }
 
 // >> accumulates values
 total : int := 0
-h >> (k, v) { total := total + v }
+h >> @(k, v) { total := total + v }
 ? total == 6 { } { ok := 0 }
 
 // >> receives correct key-value pairs — check each key maps to expected value
 seen_a : int := 0
 seen_b : int := 0
 seen_c : int := 0
-h >> (k, v) {
+h >> @(k, v) {
     ? k == "a" { ? v == 1 { seen_a := 1 } { ok := 0 } }
     ? k == "b" { ? v == 2 { seen_b := 1 } { ok := 0 } }
     ? k == "c" { ? v == 3 { seen_c := 1 } { ok := 0 } }
@@ -28,13 +28,13 @@ h >> (k, v) {
 
 // >> on empty hash — body never called
 empty_count : int := 0
-{} >> (k, v) { empty_count := empty_count + 1 }
+{} >> @(k, v) { empty_count := empty_count + 1 }
 ? empty_count == 0 { } { ok := 0 }
 
 // >> skips constructor slot
-Ctor = { x : int = 1  () = (v : int) { self.x := v } }
+Ctor = { x : int = 1  () = @(v : int) { self.x := v } }
 ctor_count : int := 0
-Ctor >> (k, v) { ctor_count := ctor_count + 1 }
+Ctor >> @(k, v) { ctor_count := ctor_count + 1 }
 ? ctor_count == 1 { } { ok := 0 }   // only x, not ()
 
 iter_test_ok = ok

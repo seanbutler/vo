@@ -1,5 +1,5 @@
-@ "tests/color.vo"
-@ "lib/loops.vo"
+# "tests/color.vo"
+# "lib/loops.vo"
 
 ok : int := 1
 
@@ -22,7 +22,7 @@ café : int := 42
 
 
 // emoji callable
-➕ = (a : int, b : int) { a + b }
+➕ = @(a : int, b : int) { a + b }
 ? ➕(3, 4) == 7 { } { ok := 0 }
 
 // emoji identifier in arithmetic
@@ -53,7 +53,7 @@ naïve : int := 1
 ? naïve == 1 { } { ok := 0 }
 
 // mixed identifier used as callable param and in arithmetic
-double🔢 = (n🔢 : int) { n🔢 * 2 }
+double🔢 = @(n🔢 : int) { n🔢 * 2 }
 ? double🔢(6) == 12 { } { ok := 0 }
 
 // mixed identifier as hash slot name, accessed via static member
@@ -65,8 +65,8 @@ stats = { max🔢 : int = 100  min🔢 : int = 0 }
 
 loop_count : int := 0
 🔁(
-    () { loop_count < 5 },
-    () { loop_count := loop_count + 1 }
+    @() { loop_count < 5 },
+    @() { loop_count := loop_count + 1 }
 )
 ? loop_count == 5 { } { ok := 0 }
 

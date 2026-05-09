@@ -1,4 +1,4 @@
-@ "tests/color.vo"
+# "tests/color.vo"
 
 ok : int := 1
 
@@ -6,7 +6,7 @@ ok : int := 1
 Point = {
     x : int = 0
     y : int = 0
-    () = (px : int, py : int) {
+    () = @(px : int, py : int) {
         self.x := px
         self.y := py
     }
@@ -29,7 +29,7 @@ q = Point(10, 20)
 Node = {
     value : int = 0
     next        = {}
-    () = (v : int, n) {
+    () = @(v : int, n) {
         self.value := v
         self.next  := n
     }

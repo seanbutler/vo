@@ -1,12 +1,12 @@
-@ "lib/metalib.vo"
-@ "tests/color.vo"
+# "lib/metalib.vo"
+# "tests/color.vo"
 
 ok : int := 1
 
 module = {
-    add = (a, b) { a + b }
-    sub = (a, b) { a - b }
-    _debug = (x) { x }
+    add = @(a, b) { a + b }
+    sub = @(a, b) { a - b }
+    _debug = @(x) { x }
     hidden : int = 7
 }
 

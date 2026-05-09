@@ -1,13 +1,13 @@
-@ "./examples/wolf/map.vo"
+# "./examples/wolf/map.vo"
 
 // Map distance to a grayscale level (232=darkest .. 255=brightest).
-wall_gray = (dist : double) {
+wall_gray = @(dist : double) {
     g : int = ifloor(255.0 - dist * 5.0)
     ? g < 232 { 232 } { g }
 }
 
 // Cast one ray for screen column col against the map, returning draw bounds and distance.
-cast_ray = (col : int, p) {
+cast_ray = @(col : int, p) {
     camera_x : double = 2.0 * col / COLS_F - 1.0
     rdx      : double = p.dir_x + p.plane_x * camera_x
     rdy      : double = p.dir_y + p.plane_y * camera_x
@@ -66,10 +66,10 @@ cast_ray = (col : int, p) {
 }
 
 // Draw 16x16 minimap in the top-right corner.
-draw_minimap = (p) {
+draw_minimap = @(p) {
     ox : int = COLS - MAP.w
-    loops.for(0, MAP.h, (my : int) {
-        loops.for(0, MAP.w, (mx : int) {
+    loops.for(0, MAP.h, @(my : int) {
+        loops.for(0, MAP.w, @(mx : int) {
             c : int = ? map_cell(mx, my) == 1 { 245 } { 235 }
             vtk.buffer_vline(ox + mx, my, 1, 32, c, c)
         })
@@ -80,10 +80,10 @@ draw_minimap = (p) {
 }
 
 // Draw one full frame into the vtk double-buffer and present it.
-draw_frame = (p) {
+draw_frame = @(p) {
     vtk.buffer_clear(32, 232, 232)
 
-    loops.for(0, COLS, (col : int) {
+    loops.for(0, COLS, @(col : int) {
         ray = cast_ray(col, p)
 
         // Ceiling — dark navy (256-color cube: index 17 = #00005f)

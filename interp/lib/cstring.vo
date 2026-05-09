@@ -1,7 +1,9 @@
-@ "lib/cstdlib.vo"
+# "lib/cstdlib.vo"
 
 // String utilities — thin wrappers around cstdlib bindings.
 // char_at(s, i) is a language builtin, not listed here.
+
+// TODO - rename this and refactor any references to cstr or cstring
 
 str = {
     len  = cstd.strlen   // str.len(s)        → int

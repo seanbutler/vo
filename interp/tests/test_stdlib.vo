@@ -1,5 +1,5 @@
-@ "lib/stdlib.vo"
-@ "tests/color.vo"
+# "lib/stdlib.vo"
+# "tests/color.vo"
 
 ok : int := 1
 
@@ -18,11 +18,11 @@ mg = merge(src, { c : int = 3  a : int = 9 })
 ? mg.a == 9 { } { ok := 0 }
 ? size(src) == 2 { } { ok := 0 }
 
-flt = filter_map(mg, (k, v) { v > 2 })
+flt = filter_map(mg, @(k, v) { v > 2 })
 ? has(flt, "b") == 0 { } { ok := 0 }
 ? has(flt, "a") == 1 { } { ok := 0 }
 
-mv = map_values(src, (v) { v * 2 })
+mv = map_values(src, @(v) { v * 2 })
 ? mv.a == 2 { } { ok := 0 }
 
 ? almost_equal(0.1 + 0.2, 0.3, 0.000001) == 1 { } { ok := 0 }

@@ -1,5 +1,5 @@
-@ "lib/stdlib.vo"
-@ "tests/color.vo"
+# "lib/stdlib.vo"
+# "tests/color.vo"
 
 ok : int := 1
 

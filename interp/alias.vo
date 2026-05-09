@@ -1,34 +1,34 @@
 // Demonstrates extending VO via library hashes.
 // logic and loops are plain values — no language changes required.
 
-@ "lib/stdio.vo"
-@ "lib/logic.vo"
-@ "lib/loops.vo"
+# "lib/stdio.vo"
+# "lib/logic.vo"
+# "lib/loops.vo"
 
 // logic.not
 ? logic.not(0) { printf_s("%s\n", "not(0) is true") }
 
 // logic.and — short-circuit
-? logic.and(() { 1 }, () { 1 }) { printf_s("%s\n", "1 and 1") }
+? logic.and(@() { 1 }, @() { 1 }) { printf_s("%s\n", "1 and 1") }
 
 // logic.or — short-circuit
-? logic.or(() { 0 }, () { 1 }) { printf_s("%s\n", "0 or 1") }
+? logic.or(@() { 0 }, @() { 1 }) { printf_s("%s\n", "0 or 1") }
 
 // loops.while
 i : int := 1
 loops.while(
-    () { i <= 5 },
-    () { printf_i("%d\n", i)  i := i + 1 }
+    @() { i <= 5 },
+    @() { printf_i("%d\n", i)  i := i + 1 }
 )
 
 // loops.do_while — body always runs at least once
 j : int := 0
 loops.do_while(
-    () { j := j + 1  printf_i("do_while j=%d\n", j) },
-    () { j < 3 }
+    @() { j := j + 1  printf_i("do_while j=%d\n", j) },
+    @() { j < 3 }
 )
 
 // loops.for — sum 1..10
 total : int := 0
-loops.for(1, 11, (n : int) { total := total + n })
+loops.for(1, 11, @(n : int) { total := total + n })
 printf_i("sum 1..10 = %d\n", total)

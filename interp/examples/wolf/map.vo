@@ -1,4 +1,4 @@
-@ "./examples/wolf/config.vo"
+# "./examples/wolf/config.vo"
 
 // 16x16 map. Each row is a 16-character string: '1' = wall, '0' = floor.
 // Bit 0 (leftmost char) = column 0.
@@ -25,7 +25,7 @@ MAP = {
     k15 : string = "1111111111111111"  // row 15
 }
 
-map_cell = (mx : int, my : int) {
+map_cell = @(mx : int, my : int) {
     row : string = MAP.("k" + my)
     ? char_at(row, mx) == "1" { 1 } { 0 }
 }

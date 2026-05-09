@@ -1,6 +1,6 @@
-@ "lib/cstdio.vo"
-@ "lib/ffi.vo"
-@ "lib/stdio.vo"
+# "lib/cstdio.vo"
+# "lib/ffi.vo"
+# "lib/stdio.vo"
 
 _color_io = bind_lib({
     lib : string = cstdio.lib
@@ -10,23 +10,23 @@ _color_io = bind_lib({
     }
 })
 
-_esc = () {
+_esc = @() {
     _color_io.putchar(27)
 }
 
-_set_color = (code : string) {
+_set_color = @(code : string) {
     _esc()
     printf_s("%s", "[")
     printf_s("%s", code)
     printf_s("%s", "m")
 }
 
-_reset_color = () {
+_reset_color = @() {
     _esc()
     printf_s("%s", "[0m")
 }
 
-print_pass = (name : string) {
+print_pass = @(name : string) {
     _set_color("32")
     printf_s("%s", "PASS")
     _reset_color()
@@ -35,7 +35,7 @@ print_pass = (name : string) {
     printf_s("%s", "\n")
 }
 
-print_fail = (name : string) {
+print_fail = @(name : string) {
     _set_color("31")
     printf_s("%s", "FAIL")
     _reset_color()
@@ -44,7 +44,7 @@ print_fail = (name : string) {
     printf_s("%s", "\n")
 }
 
-report_test = (name : string, ok : int) {
+report_test = @(name : string, ok : int) {
     ? ok == 1 { print_pass(name) } { print_fail(name) }
     ok
 }

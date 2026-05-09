@@ -1,5 +1,5 @@
-@ "lib/cstdio.vo"
-@ "lib/ffi.vo"
+# "lib/cstdio.vo"
+# "lib/ffi.vo"
 
 // TODO - find a scope with a name for this file
 // TODO - rename the file and refactor where its used

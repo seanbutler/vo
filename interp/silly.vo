@@ -1,7 +1,7 @@
 // silly little program
 
-@ "lib/cstdlib.vo"
-@ "lib/vtkit.vo"
+# "lib/cstdlib.vo"
+# "lib/vtkit.vo"
 
 W : int = 100
 H : int = 32
@@ -22,12 +22,12 @@ sun_x : int = W - 20
 sun_y : int = 3
 
 
-meta_test = () {
+meta_test = @() {
 	greater_than_plus_ten(x, W)
 }
 
 
-greater_than_plus_ten = (a:int, b:int) {
+greater_than_plus_ten = @(a:int, b:int) {
 	a>b+10
 }
 

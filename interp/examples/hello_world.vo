@@ -1,6 +1,6 @@
-@ "./lib/stdio.vo"
+# "./lib/stdio.vo"
 
-Main = () {
+Main = @() {
     printf_s("%s", "Hello World\n")
 }
 

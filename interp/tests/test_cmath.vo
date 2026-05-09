@@ -1,7 +1,7 @@
-@ "lib/cmath.vo"
-@ "lib/ffi.vo"
-@ "lib/stdlib.vo"
-@ "tests/color.vo"
+# "lib/cmath.vo"
+# "lib/ffi.vo"
+# "lib/stdlib.vo"
+# "tests/color.vo"
 
 ok : int := 1
 
