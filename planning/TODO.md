@@ -76,6 +76,7 @@ Items with no upstream dependencies (safe to start anytime):
 | Homoiconicity — `parse` and `eval` (builds on AST API) | COULD, LATER, HIGH, BROAD | [homoiconicity.md](homoiconicity.md) |
 | Enforce immutability at runtime | MUST, LATER, LOW, BROAD | [immutability.md](immutability.md) |
 | Output / stdio design | MUST, LATER | [stdio-design.md](stdio-design.md) |
+| Default parameter values | COULD, LATER, LOW, BROAD | [default-params.md](default-params.md) |
 
 ### Systems / FFI
 
