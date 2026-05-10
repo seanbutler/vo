@@ -68,7 +68,6 @@ Items with no upstream dependencies (safe to start anytime):
 
 | Item | Priority | File |
 |------|----------|------|
-| Swap "@`/`#` — callable sigil + import sigil | MUST, SOONER, LOW, BROAD | [callable-sigil.md](callable-sigil.md) |
 | Hash arrays — insertion order, variant keys, `.(expr)` integer access | MUST, SOONER, MEDIUM, BROAD | [hash-arrays.md](hash-arrays.md) |
 | Drop comma from parameter lists | MUST, SOONER, LOW, BROAD | [drop-commas.md](drop-commas.md) |
 | Lazy boolean operators `&` and `\|` | MUST, SOONER, SMALL, BROAD | [lazy-boolean.md](lazy-boolean.md) |
@@ -130,6 +129,7 @@ See [unicode_plan.md](unicode_plan.md) for the full plan.
 
 See [done.md](done.md) for details.
 
+- Callable sigil + import sigil swap — `@` callable literal, `#` import
 - Unicode identifiers — Phase 1 (UTF-8 byte pass-through in lexer)
 - Boolean logic operators — `lib/logic.vo`
 - Loop syntax — `~{ }`, `\`, `!`

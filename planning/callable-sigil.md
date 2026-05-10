@@ -1,5 +1,5 @@
 ---
-status: PENDING
+status: DONE
 priority: (MUST, SOONER, LOW, BROAD)
 ---
 

@@ -1,5 +1,26 @@
 # Done
 
+## Callable sigil + import sigil swap
+- (MUST, SOONER, LOW, BROAD)
+
+`@` is now the callable literal sigil; `#` is now the import sigil.
+
+| Before | After |
+|--------|-------|
+| `(params) { body }` | `@(params) { body }` |
+| `@ "lib/foo.vo"` | `# "lib/foo.vo"` |
+| `>> (k, v) { }` | `>> @(k, v) { }` |
+
+**C++ changes:**
+- `token.hpp` — added `Hash` token type; `At` retained for callable sigil
+- `lexer.cpp` — `#` → `Hash`, `@` → `At`
+- `parser.cpp` — import trigger changed from `At` to `Hash`; `parse_primary()` checks for `At` before `parse_callable()`; `>>` RHS changed to `parse_expr()`; `looks_like_callable()` heuristic removed entirely
+- `parser.hpp` — `looks_like_callable()` declaration removed
+
+**Migration:** all 40+ `.vo` files updated via three-pass script (sed for imports, sed for `>>` callbacks, Python regex with `(?<!\w)(?<!@)\(([^\(\)\{\}]*)\)(\s*\{)` for remaining callable literals).
+
+All 17 tests pass including emoji-param unicode test.
+
 ## Unicode identifiers — Phase 1
 - Lexer accepts any UTF-8 byte sequence as an identifier (high bytes > 127 treated as identifier characters)
 - Two-line change in `lexer.cpp` — `read_word()` continuation and `tokenize()` start condition
