@@ -20,7 +20,7 @@ needed to make them clean and efficient.
 hash.(99)             // integer key — already valid, same parse path as hash.(k)
 hash.(n)              // variable key
 hash.(n + 1)          // computed key
-hash.("name"+"part")  // constructed string key → "namepart"
+hash.("name"+"part")  // constructed string key -> "namepart"
 hash.name             // static string key (sugar for hash.("name"))
 ```
 
@@ -40,9 +40,9 @@ integer-indexed array slots and string-named members should be separate namespac
 using Key = std::variant<std::string, int64_t>;
 ```
 
-- `hash.name` and `hash.("name")` → string key `"name"`
-- `hash.(99)` → integer key `int64_t(99)`
-- `hash.("99")` → string key `"99"` (distinct from integer key `99`)
+- `hash.name` and `hash.("name")` -> string key `"name"`
+- `hash.(99)` -> integer key `int64_t(99)`
+- `hash.("99")` -> string key `"99"` (distinct from integer key `99`)
 
 ### Variant key overhead
 
@@ -93,7 +93,7 @@ arr.(99) := "z"
 ### Reading an unset index
 
 ```vo
-arr.(50)   // slot not present → returns {} (null)
+arr.(50)   // slot not present -> returns {} (null)
 ```
 
 Consistent with VO's existing null sentinel. No special case needed.

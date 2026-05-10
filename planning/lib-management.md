@@ -29,7 +29,7 @@ loops = @ "lib/loops.vo"    // execute, cache, return the hash,  bind to loops
 loops = @ "lib/loops.vo"    // return cached hash - file not re-executed
 ```
 
-The interpreter caches `{ canonical_path → returned_value }`. The import guard is automatic
+The interpreter caches `{ canonical_path -> returned_value }`. The import guard is automatic
 and invisible. Using `@` as a statement still works (return value discarded), so existing
 code is unaffected:
 

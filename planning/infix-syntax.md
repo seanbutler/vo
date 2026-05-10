@@ -53,7 +53,7 @@ delimiter pairs** with an expression inside, not just single operator tokens.
 With this in place, `[]` subscript syntax becomes a library feature:
 
 ```vo
-# "lib/subscript.vo"   // registers: expr [ expr ] → expr.(expr)
+# "lib/subscript.vo"   // registers: expr [ expr ] -> expr.(expr)
 
 arr[99]                // valid — rewrites to arr.(99)
 arr["name"]            // valid — rewrites to arr.("name")

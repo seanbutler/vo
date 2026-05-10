@@ -14,7 +14,7 @@ Render the parsed AST as a Graphviz `.dot` graph, one per source file and one co
 
 ## Output
 
-- Per-file: `<source_stem>.dot` (e.g. `main.vo` → `main.dot`)
+- Per-file: `<source_stem>.dot` (e.g. `main.vo` -> `main.dot`)
 - Combined: `program.dot` — all files merged into one digraph, subgraphs per file
 
 ## Step 1 — `--ast` flag (`main.cpp`)
@@ -27,7 +27,7 @@ Render the parsed AST as a Graphviz `.dot` graph, one per source file and one co
 - Visitor over the AST (expressions + statements)
 - Each node becomes a Graphviz node with a unique ID (e.g. pointer address or counter)
 - Label: node type + key field (literal value, operator, identifier name)
-- Edges: parent → child for each child slot
+- Edges: parent -> child for each child slot
 - Output: valid `.dot` file, one `digraph` per file, `subgraph cluster_<file>` in combined output
 
 ## Step 3 — Per-file emit on `#` import (`interpreter.cpp`)

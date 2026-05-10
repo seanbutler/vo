@@ -40,7 +40,7 @@ Paper 2  (theory / hash rewriting)         ← speculative; pursue in parallel w
 
 - Depends on homoiconicity (`parse`/`eval`) being implemented — see `homoiconicity.md`
 - Depends on unified dispatch (dot/infix/UFCS) being implemented — see `unified-dispatch.md`
-- The emergence chain: one primitive → many mechanisms at no additional conceptual cost
+- The emergence chain: one primitive -> many mechanisms at no additional conceptual cost
 
 ## Paper 2 — Theory: hash/feature-structure rewriting *(LICS / FSCD / workshop)*
 

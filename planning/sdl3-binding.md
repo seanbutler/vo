@@ -47,8 +47,8 @@ fill_rect = @(ren r) { SDL.fill_rect(ren, r.x, r.y, r.w, r.h) }
 ```
 
 Full shim API:
-- `vo_create_window(title, w, h)` → pointer — SDL_Init + SDL_CreateWindow
-- `vo_create_renderer(win)` → pointer — SDL_CreateRenderer(win, NULL)
+- `vo_create_window(title, w, h)` -> pointer — SDL_Init + SDL_CreateWindow
+- `vo_create_renderer(win)` -> pointer — SDL_CreateRenderer(win, NULL)
 - `vo_destroy_window(win)`, `vo_destroy_renderer(ren)` — cleanup
 - `vo_pump()` — drains SDL_Event queue, updates internal state
 - `vo_quit()` — 1 if quit event received

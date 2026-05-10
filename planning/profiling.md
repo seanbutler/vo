@@ -32,7 +32,7 @@ When `--profile` is passed, collect per-function timing and memory data and prin
 
 ## Step 2 — profile accumulator (`src/profiler.hpp/.cpp`)
 
-- Map from function name → `{call_count, total_ns, self_ns, peak_bytes}`
+- Map from function name -> `{call_count, total_ns, self_ns, peak_bytes}`
 - Thread-safe if concurrency is ever added; for now a plain `std::unordered_map`
 - Active only when `--profile` flag is set — zero overhead otherwise
 

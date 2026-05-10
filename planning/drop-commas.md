@@ -1,6 +1,6 @@
 ---
 status: PENDING
-priority: (MUST, SOONER, LOW, BROAD)
+priority: (SHOULD, SOONER, LOW, BROAD)
 ---
 
 # Drop comma from parameter lists

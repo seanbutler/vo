@@ -13,8 +13,8 @@ The goal is to remove them and use ordinary `bind_lib`-bound C functions.
 
 | Builtin | Blocker |
 |---|---|
-| `ifloor(double) → int` | No `double` param type in the integer-register-class dispatcher |
-| `char_at(string, int) → string` | No `cstring` return type — dispatcher can only return `int64_t` |
+| `ifloor(double) -> int` | No `double` param type in the integer-register-class dispatcher |
+| `char_at(string, int) -> string` | No `cstring` return type — dispatcher can only return `int64_t` |
 
 ## Step 1 — extend the FFI dispatcher (`interpreter.cpp`)
 

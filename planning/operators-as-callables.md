@@ -99,7 +99,7 @@ Vec = {
 }
 v1 = Vec(1  2)
 v2 = Vec(3  4)
-v3 = v1 + v2            // desugars to +(v1, v2) → Vec.+ lookup via self
+v3 = v1 + v2            // desugars to +(v1, v2) -> Vec.+ lookup via self
 ```
 
 **Breaking change**: all existing expressions using `+` `-` `*` `/` `%` without explicit parentheses around mixed operators will need parentheses added.

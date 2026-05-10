@@ -60,10 +60,10 @@ env   = ast.env_new()              // fresh empty scope
 child = ast.env_child(env)         // child inherits parent bindings
 cur   = ast.env_current()          // get the currently executing environment
 
-ast.env_bind(env, "x", 42)         // bind name → value
+ast.env_bind(env, "x", 42)         // bind name -> value
 ast.env_set(env, "x", 99)          // mutate existing binding
-ast.env_get(env, "x")              // → 42
-ast.env_has(env, "x")              // → 1 / 0
+ast.env_get(env, "x")              // -> 42
+ast.env_has(env, "x")              // -> 1 / 0
 ```
 
 ### Layer 3 — evaluation

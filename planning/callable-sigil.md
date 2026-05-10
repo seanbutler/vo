@@ -35,10 +35,10 @@ A callable sigil eliminates the ambiguity with zero lookahead. `@` is the natura
 - Import now triggered by `TT::Hash` instead of `TT::At`
 
 *Step 4 — lexer*:
-- Add `#` → `TT::Hash` token (currently `#` hits `default: error(...)`)
+- Add `#` -> `TT::Hash` token (currently `#` hits `default: error(...)`)
 
 *Step 5 — migrate all `.vo` files*:
-- Global find-and-replace `@ "` → `# "` across `interp/lib/`, `interp/tests/`, `interp/examples/`, `interp/game/`
+- Global find-and-replace `@ "` -> `# "` across `interp/lib/`, `interp/tests/`, `interp/examples/`, `interp/game/`
 - Mechanical; no logic changes
 
 *Step 6 — extend test coverage*:
@@ -61,4 +61,4 @@ result = f(21)
 
 Grammar becomes unambiguous with one token of lookahead. `looks_like_callable()` deleted. `#` is safe from future operator conflicts; `@` has no plausible future use as an arithmetic operator.
 
-**Breaking change**: all existing `.vo` source files need the mechanical `@ "` → `# "` substitution.
+**Breaking change**: all existing `.vo` source files need the mechanical `@ "` -> `# "` substitution.

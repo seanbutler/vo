@@ -11,8 +11,8 @@ depends: operators-as-callables.md
 Dot notation and infix operators are the same transformation — first argument moves left of the function name:
 
 ```
-f(a, b)   →   a.f(b)    // dot notation
-f(a, b)   →   a + b     // infix operator
+f(a, b)   ->   a.f(b)    // dot notation
+add(a, b)   ->   a + b     // infix operator
 ```
 
 Both are syntactic sugar for the same underlying call. Unifying them under one dispatch rule gives:
@@ -41,7 +41,7 @@ Vec = {
 }
 v1 = Vec(1  2)
 v2 = Vec(3  4)
-v3 = v1 + v2    // a.+(b) → looks up + on v1 → Vec.+
+v3 = v1 + v2    // a.+(b) -> looks up + on v1 -> Vec.+
 ```
 
 ## UFCS
@@ -50,7 +50,7 @@ Dot and prefix are interchangeable when the name is not a member:
 
 ```vo
 double = @(x : int) { x * 2 }
-5.double()     // looks up double on 5 (int), not found → falls through to global → double(5)
+5.double()     // looks up double on 5 (int), not found -> falls through to global -> double(5)
 ```
 
 ## The single dispatch rule
