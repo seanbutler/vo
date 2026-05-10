@@ -1,7 +1,21 @@
 # "./lib/stdio.vo"
 
+
+echo = @(message:string, times:int) {
+    counter : int = times
+    ~{
+        ? counter == 0 {
+            \
+        }
+
+        printf_s("%s", message)
+        counter := counter - 1
+    }
+}
+
 hello = @(who:string) {
     printf_s("Hello, %s!\n", who)
 }
 
 hello("World")
+echo("World ", 3)

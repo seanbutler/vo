@@ -4,6 +4,7 @@ project(vo CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+option(VO_ENABLE_PG "Enable gprof instrumentation (-pg)" OFF)
 
 add_executable(vo
     src/main.cpp
@@ -17,6 +18,18 @@ add_executable(vo
 target_include_directories(vo PRIVATE src)
 target_compile_options(vo PRIVATE -Wall -Wextra -Wpedantic)
 target_link_libraries(vo PRIVATE dl)
+
+#
+# Use if you Want to Build for Profiling with gprof. The -pg flag will be added to compile and link options 
+#
+
+set (VO_ENABLE_PG OFF CACHE BOOL "" FORCE)
+
+if(VO_ENABLE_PG)
+    target_compile_options(vo PRIVATE -pg)
+    target_link_options(vo PRIVATE -pg)
+endif()
+
 set_target_properties(vo PROPERTIES BUILD_RPATH "$ORIGIN")
 
 set(VTK_BUILD_EXAMPLE OFF CACHE BOOL "" FORCE)

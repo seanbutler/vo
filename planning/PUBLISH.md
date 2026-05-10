@@ -43,8 +43,8 @@ In Lisp, S-expressions were *designed* to be both code and data. In VO, homoicon
 
 Dot notation and infix operators are the same transformation — first argument moves left of the function name. One dispatch rule unifies them:
 
-1. Look up the function name as a slot on the first argument (prototype chain) → operator overloading
-2. Fall through to global scope → UFCS
+1. Look up the function name as a slot on the first argument (prototype chain) -> operator overloading
+2. Fall through to global scope -> UFCS
 
 ```vo
 a + b        // sugar for a.+(b)
@@ -76,7 +76,7 @@ Related, but the direction is reversed:
 | Primitive | Function (λ) | Hash (data) |
 | Data representation | Church encodings — functions pretending to be data | Real data structures used as data |
 | Practical programmability | No | Yes |
-| Direction | Functions → data (derived) | Data → functions (stored in hashes) |
+| Direction | Functions -> data (derived) | Data -> functions (stored in hashes) |
 | Claim | Theoretical: you *can* derive everything | Practical: you can derive enough that the rest become libraries |
 
 The closer formal comparison is Abadi & Cardelli's object calculus (1996). Lambda calculus is a theoretical claim about expressiveness; VO is a practical claim about language design economy.
@@ -173,7 +173,7 @@ Research confirms no existing tree-walking interpreter applies this technique. I
 
 ### Why the gap exists
 
-The standard path goes tree-walking → bytecode VM, treating tree-walking as a throwaway phase. The bytecode VM gets cache locality for free (flat instruction array) so nobody optimised the tree-walking stage. The GC community solved adjacent problems with different motivation. The database community reached the technique independently. JIT research absorbed all remaining attention. The gap exists not because the idea is hard, but because the road everyone travelled bypassed it.
+The standard path goes tree-walking -> bytecode VM, treating tree-walking as a throwaway phase. The bytecode VM gets cache locality for free (flat instruction array) so nobody optimised the tree-walking stage. The GC community solved adjacent problems with different motivation. The database community reached the technique independently. JIT research absorbed all remaining attention. The gap exists not because the idea is hard, but because the road everyone travelled bypassed it.
 
 ### Enabling change: arena allocation
 
@@ -224,8 +224,8 @@ A tree-walking interpreter, when instrumented for cache-tier layout, produces a 
 ```
 Instrumented tree-walking interpreter
          ↓  visit counts, type observations, branch frequencies
-         ├─→  L1/L2/L3 cache-tier AST layout    — immediate speedup (Paper 3)
-         └─→  Profile export
+         ├─->  L1/L2/L3 cache-tier AST layout    — immediate speedup (Paper 3)
+         └─->  Profile export
                     ↓
              Bytecode compiler
              + hot callable reordering
@@ -268,10 +268,10 @@ This is distinct from standard PGO (profile collected in one run, optimisation a
 
 | System | Relationship |
 |--------|-------------|
-| V8 Ignition → TurboFan | Profile fed from bytecode interpreter to JIT — but profiling stage not itself optimised by the profile; no cache-tier layout |
+| V8 Ignition -> TurboFan | Profile fed from bytecode interpreter to JIT — but profiling stage not itself optimised by the profile; no cache-tier layout |
 | LuaJIT tracing | Hot traces compiled from bytecode — single stage, no shared profile architecture |
 | PyPy meta-tracing | RPython generates JIT from interpreter description — elegant but orthogonal; no cache layout |
-| HotSpot tiered compilation | C1 → C2 with profile feedback — closest in structure; operates on JVM bytecode not AST |
+| HotSpot tiered compilation | C1 -> C2 with profile feedback — closest in structure; operates on JVM bytecode not AST |
 
 ### Paper structure
 

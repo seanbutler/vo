@@ -10,11 +10,11 @@ VO has no reserved words and symbol-only syntax, making it uniquely suited to fu
 
 The goal is to separate three concerns cleanly:
 
-```
-1. Source (community symbols) → symbol table → canonical AST
-2. Canonical AST → interpreter
-3. Interpreter errors → error template table → community-language diagnostics
-```
+
+1. Source (community symbols) -> symbol table -> canonical AST
+2. Canonical AST -> interpreter
+3. Interpreter errors -> error template table -> community-language diagnostics
+
 
 ## Layer 1 — UTF-8 support (lexer + runtime)
 

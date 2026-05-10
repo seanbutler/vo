@@ -9,73 +9,91 @@ depends: callable-sigil.md (@ syntax settled first)
 ## Background
 
 VO hashes use string identifier keys. Lua tables have a built-in hybrid array/hash
-structure; VO does not. Arrays can be built on top of hashes, but two language changes
-are needed to make them clean and efficient.
+structure; VO does not. Arrays can be built on top of hashes, but two changes are
+needed to make them clean and efficient.
 
-## Required language changes
+## Syntax — no new syntax required
 
-### 1. Insertion-ordered `>>`
-
-Currently `>>` iterates via `std::unordered_map` — no order guarantee. Switch to an
-insertion-ordered map (e.g. `std::map` sorted, or a linked hash map). `>>` then gives
-predictable sequential iteration on any hash with no new syntax:
+`.(expr)` already handles dynamic key access for any expression, including integer literals:
 
 ```vo
-arr = { x = "a"  y = "b"  z = "c" }
-arr >> @(k v) { printf_s("%s\n", v) }   // a, b, c — guaranteed insertion order
+hash.(99)             // integer key — already valid, same parse path as hash.(k)
+hash.(n)              // variable key
+hash.(n + 1)          // computed key
+hash.("name"+"part")  // constructed string key -> "namepart"
+hash.name             // static string key (sugar for hash.("name"))
 ```
 
-Solves ordered iteration. Does not solve random access.
+`hash.[99]` is not needed and would introduce `[` as a special case used nowhere else.
+`hash.99` would require a parser special case (`.` currently expects `(` or Identifier).
+`hash.(99)` is the right syntax — it reuses an existing parse path with no changes.
 
-### 2. Bracket key syntax `[expr]`
+## Integer keys must be distinct from string keys
 
-Allow any expression as a hash key in literals and as an assignment target:
+Currently all hash keys are `std::string`. `hash.(99)` with integer `99` would need
+to coerce to `"99"`, making it identical to `hash.("99")`. That conflation is wrong —
+integer-indexed array slots and string-named members should be separate namespaces.
 
-```vo
-arr = { [0] = "a"  [1] = "b"  [2] = "c" }
-arr.[1]          // "b" — O(1) direct hash lookup
-arr.[i]          // dynamic read
-arr.[99] := "x"  // dynamic write — bracket syntax on assignment target
+**Solution: variant key type**
+
+```cpp
+using Key = std::variant<std::string, int64_t>;
 ```
 
-Keys stored internally as strings (`"0"`, `"1"`, ...). `>>` sorts integer-looking keys
-numerically before string keys (JavaScript-style).
+- `hash.name` and `hash.("name")` -> string key `"name"`
+- `hash.(99)` -> integer key `int64_t(99)`
+- `hash.("99")` -> string key `"99"` (distinct from integer key `99`)
 
-**Parser changes needed:**
-- `[expr]` as a hash literal member key
-- `hash.[expr]` as a read expression (postfix, alongside existing `hash.(expr)`)
-- `hash.[expr] := value` as a valid assignment target
+### Variant key overhead
+
+Negligible for VO's use case:
+
+| Cost | Detail |
+|---|---|
+| Size | `sizeof(variant<string, int64_t>)` ≈ `sizeof(string)` — dominated by string, no meaningful increase |
+| Hash | One type-dispatch branch per lookup — negligible |
+| Equality | One type check before comparison — negligible |
+| Construction | Integer keys are *cheaper* than current coerce-to-string — no heap allocation |
+
+## Storage — insertion-ordered vector
+
+For insertion-ordered `>>` and integer key support, replace `std::unordered_map<std::string, Value>`
+with a single ordered structure:
+
+```cpp
+std::vector<std::pair<Key, Value>>   // insertion order preserved
+```
+
+Lookup is O(n) linear scan — acceptable for typical VO hash sizes (small, named members).
+For large dense arrays the stdlib `array.vo` layer manages access patterns.
+
+Alternative considered: two separate maps (`unordered_map<string>` + `unordered_map<int64_t>`).
+Rejected: `>>` iteration would need to merge two ranges and loses a single insertion order.
+
+## `>>` iteration
+
+`>>` visits all slots in insertion order, skipping `_`-prefixed and `()` slots as now.
+Both string and integer keys are visited — `k` receives the key as its natural type
+(string or int).
 
 ## Sparse vs dense
 
-Setting a distant index directly is valid — it just leaves gaps:
+Setting a distant index is valid — gaps are left empty:
 
 ```vo
-arr.[0]  := "a"
-arr.[99] := "z"
-// hash has two slots: "0" and "99"
-// indices 1–98 don't exist — reading them returns {} (VO's null)
+arr.(0)  := "a"
+arr.(99) := "z"
+// two slots exist; indices 1–98 don't — reading them returns {}
 ```
 
-This is a **sparse array** by default. Only pay for what you store.
+### `_size` — extent not count
 
-### `_size` ambiguity
-
-For sparse arrays, two meanings of "size" diverge:
-
-| Convention | `_size` means | Useful for |
-|---|---|---|
-| Extent | highest index + 1 (= 100 above) | dense-style loops, `loops.for(0, _size, ...)` |
-| Count  | number of set slots (= 2 above) | memory accounting, sparse iteration |
-
-**Decision: use extent.** `_size` = highest index + 1. Matches the expectation that
-`loops.for(0, array.len(arr), ...)` visits every logical position. Gaps are visited as
-`{}`.
+`_size` = highest integer index + 1. Matches `loops.for(0, arr._size, ...)` expectation.
 
 ### Reading an unset index
 
 ```vo
-arr.[50]   // slot "50" not present → returns {} (null)
+arr.(50)   // slot not present -> returns {} (null)
 ```
 
 Consistent with VO's existing null sentinel. No special case needed.
@@ -85,36 +103,34 @@ Consistent with VO's existing null sentinel. No special case needed.
 `>>` only visits keys that exist — gaps are skipped:
 
 ```vo
-arr.[0]  := "a"
-arr.[99] := "z"
-arr >> @(k v) { }   // visits "a" then "z" only — two iterations, not 100
+arr.(0)  := "a"
+arr.(99) := "z"
+arr >> @(k v) { }   // two iterations, not 100
 ```
 
-This is correct for sparse use cases. For dense iteration use `array_each` (see below).
+For dense iteration (gaps included as `{}`) use `array.each` from `lib/array.vo`.
 
 ## Stdlib library (`lib/array.vo`)
 
 ```vo
 array = {
     new = @(...) {
-        // bind [0], [1], ... from args, set _size
+        // bind (0), (1), ... from args, set _size
     }
 
     set = @(a i v) {
         a.(i) := v
-        ? i >= a._size { a._size := i + 1 }  // track extent
+        ? i >= a._size { a._size := i + 1 }
     }
 
-    get  = @(a i) { a.(i) }     // returns {} if unset — caller checks
+    get  = @(a i) { a.(i) }
 
-    len  = @(a)   { a._size }   // extent: highest index + 1
+    len  = @(a)   { a._size }
 
-    // dense iteration — visits every index 0.._size, gaps included as {}
     each = @(a f) {
         loops.for(0, a._size, @(i) { f(i, array.get(a, i)) })
     }
 
-    // sparse iteration — skips gaps, only visits set slots
     each_set = @(a f) {
         a >> @(k v) { ? k != "_size" { f(k, v) } }
     }
@@ -126,13 +142,13 @@ array = {
 }
 ```
 
-Two iteration modes — caller picks the right one:
+Two iteration modes:
 - `array.each` — walks every index 0.._size (gaps appear as `{}`)
 - `array.each_set` — uses `>>`, skips gaps, visits only defined slots
 
 ## Use cases
 
-**Dense arrays** (insertion order + bracket keys):
+**Dense arrays:**
 ```vo
 arr = array.new("a", "b", "c")
 array.each(arr, @(i v) { printf_s("%s\n", v) })   // a, b, c
@@ -141,7 +157,7 @@ array.push(arr, "d")
 array.len(arr)                                     // 4
 ```
 
-**Sparse arrays** (entity-component, adjacency maps, most-indices-empty):
+**Sparse arrays:**
 ```vo
 grid = {}
 grid._size := 0
@@ -152,15 +168,13 @@ array.each_set(grid, @(k v) { printf_s("%s\n", v) })  // "start", "end" only
 
 ## Performance note
 
-Hash-backed arrays are O(1) average for random access but have higher constant cost
-than contiguous memory (pointer chase + key comparison). For most VO use cases —
-game objects, config, moderate-sized lists — this is acceptable.
-
-For tight inner-loop numeric data (image buffers, large matrices) reach for a C FFI
-buffer instead. The hash array is not a replacement for a typed contiguous array.
+Hash-backed arrays are O(1) average for random access (unordered_map) or O(n) with the
+insertion-ordered vector. For typical VO use cases — game objects, config, moderate-sized
+lists — this is fine. For tight inner-loop numeric data reach for a C FFI buffer.
 
 ## Implementation order
 
-1. Insertion-ordered `>>` — interpreter change (`std::unordered_map` → ordered map)
-2. Bracket key syntax `[expr]` — lexer + parser change (read + write positions)
-3. `lib/array.vo` — pure VO, no C++ once steps 1 and 2 are done
+1. **Variant key type** — change hash storage from `std::string` key to `std::variant<std::string, int64_t>`; update all key lookup, hash, and equality paths
+2. **Insertion-ordered storage** — replace `std::unordered_map` with `std::vector<std::pair<Key, Value>>`; update `>>` to iterate in order
+3. **Interpreter: `.(expr)` integer dispatch** — when key expression evaluates to `int64_t`, store/lookup as integer key (not coerced to string)
+4. **`lib/array.vo`** — pure VO, no C++ once steps 1–3 are done

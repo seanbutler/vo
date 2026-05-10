@@ -313,6 +313,24 @@ Full source: `interp/alias.vo`
 
 VO draws from several lineages. No single language shares all of its characteristics; the combination is what makes it distinct.
 
+### GOFAI Frames
+
+Minsky's frame theory (1974) is a direct conceptual ancestor of VO's hash model. The
+correspondence is close enough to be more than coincidence — the lineage runs through
+Lisp frame systems, Smalltalk, Self, and Io before arriving at VO.
+
+| Frame concept | VO equivalent |
+|---------------|---------------|
+| Slot with default value | `{ name : type = default }` |
+| Inherited defaults via isa/ako link | `_` delegation chain |
+| Procedural attachment (if-needed) | callable member: `method = @() { ... }` |
+| Frame initialisation procedure | `()` constructor slot |
+| Slot type constraint | `: type` annotation |
+
+Where VO diverges from classic frames: no per-slot demons (if-added / if-removed
+triggers), no embedded semantic network, and no inference engine — VO uses the same
+structure for general-purpose computation rather than knowledge representation.
+
 ### Prototype cloning model
 
 Calling a hash clones it and invokes its `()` slot — the core OOP mechanism.

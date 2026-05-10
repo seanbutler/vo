@@ -34,3 +34,34 @@ After parsing any primary expression, check if next token is a backtick-delimite
 - In the binary-expression loop, after the primary, check for `TOKEN_BACKTICK_IDENT`
 - Consume it, parse next primary, emit `CallExpr`
 - Left-associative; same precedence tier as function calls
+
+## Stretch goal — library-defined syntax rewrites
+
+The broader ambition is that all syntax extensions live in `.vo` files, not in the
+interpreter. The token rewriting mechanism that handles infix operators should be
+expressive enough to cover three forms:
+
+| Form | Example | Desugars to |
+|------|---------|-------------|
+| Binary infix | `a + b` | `+(a, b)` |
+| Prefix unary | `! x` | `not(x)` |
+| Bracketed postfix | `a[b]` | `a.(b)` |
+
+The bracketed postfix case is the hard one — the rewriter needs to understand **matched
+delimiter pairs** with an expression inside, not just single operator tokens.
+
+With this in place, `[]` subscript syntax becomes a library feature:
+
+```vo
+# "lib/subscript.vo"   // registers: expr [ expr ] -> expr.(expr)
+
+arr[99]                // valid — rewrites to arr.(99)
+arr["name"]            // valid — rewrites to arr.("name")
+```
+
+Without that import, `[` is an unknown token. No hidden interpreter behaviour — the
+programmer opts in explicitly and can inspect the rewrite rule in the source.
+
+This is the same philosophy as `!` eventually delegating to a VO-defined `not` via the
+prefix rewrite mechanism: the interpreter provides irreducible primitives only;
+everything else is expressible within the language itself.

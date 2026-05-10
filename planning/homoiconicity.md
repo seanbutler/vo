@@ -17,7 +17,7 @@ VO's AST is exposed as VO hashes. Code becomes data; data becomes executable. Tw
 tree = parse("1 + 2")
 // tree = { type = "binary"  op = "+"  left = { type = "int"  value = 1 }  right = { type = "int"  value = 2 } }
 
-eval(tree)   // → 3
+eval(tree)   // -> 3
 ```
 
 Once these exist, operator precedence reordering is expressible entirely in VO:
@@ -30,7 +30,7 @@ reorder = @(node) {
     ...
 }
 
-eval(reorder(parse("1 + 2 * 3")))   // → 7, not 9
+eval(reorder(parse("1 + 2 * 3")))   // -> 7, not 9
 ```
 
 Any syntax transform becomes a VO library — macros, precedence, DSLs, code generation — without touching the interpreter.
