@@ -18,7 +18,7 @@ Hard dependencies ( -> means "must be done before" ):
 
 [infix-syntax](infix-syntax) -> [operators-as-callables](operators-as-callables) -> [unified-dispatch](unified-dispatch)
 
-[callable-sigil](callable-sigil) -> [hash-arrays](hash-arrays) (bracket syntax settled after sigil swap)
+[callable-sigil](callable-sigil) -> [hash-arrays](hash-arrays) (.(expr) syntax confirmed; no bracket syntax needed)
 
 
 
@@ -69,7 +69,7 @@ Items with no upstream dependencies (safe to start anytime):
 | Item | Priority | File |
 |------|----------|------|
 | Swap "@`/`#` — callable sigil + import sigil | MUST, SOONER, LOW, BROAD | [callable-sigil.md](callable-sigil.md) |
-| Hash arrays — insertion order + bracket keys | MUST, SOONER, MEDIUM, BROAD | [hash-arrays.md](hash-arrays.md) |
+| Hash arrays — insertion order, variant keys, `.(expr)` integer access | MUST, SOONER, MEDIUM, BROAD | [hash-arrays.md](hash-arrays.md) |
 | Drop comma from parameter lists | MUST, SOONER, LOW, BROAD | [drop-commas.md](drop-commas.md) |
 | Lazy boolean operators `&` and `\|` | MUST, SOONER, SMALL, BROAD | [lazy-boolean.md](lazy-boolean.md) |
 | User-defined infix call syntax (backtick) | COULD, SOONER, SMALL, BROAD | [infix-syntax.md](infix-syntax.md) |
